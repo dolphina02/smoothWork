@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Task v2 Wireframe</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #151b22;
+      --panel-2: #1a2330;
+      --panel-3: #202b39;
+      --border: #2a3443;
+      --text: #edf3ff;
+      --sub: #b2bfd5;
+      --muted: #7f8ca5;
+      --accent: #7aa2ff;
+      --accent-soft: rgba(122,162,255,0.12);
+      --green: #49c59d;
+      --amber: #e7b75a;
+      --red: #ef6b65;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    body { overflow: hidden; }
+    .app { height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .leftops { display: flex; align-items: center; gap: 10px; }
+    .select { border: 1px solid var(--border); background: var(--panel-2); color: var(--text); padding: 8px 12px; border-radius: 10px; font-size: 12px; }
+    .button { background: var(--accent-soft); border: 1px solid rgba(122,162,255,0.3); color: var(--text); border-radius: 10px; padding: 8px 12px; font-size: 12px; }
+    .board { flex: 1; display: flex; min-height: 0; }
+    .leftrail { width: 160px; border-right: 1px solid var(--border); background: rgba(255,255,255,0.01); }
+    .row-header { height: 52px; display: flex; align-items: center; justify-content: center; color: var(--sub); font-size: 12px; border-bottom: 1px solid var(--border); }
+    .assignee-list { padding: 10px 8px; }
+    .assignee { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin-bottom: 6px; border-radius: 10px; color: var(--sub); font-size: 13px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .assignee.active { background: rgba(122,162,255,0.08); color: var(--text); }
+    .timeline { flex: 1; overflow: auto; position: relative; }
+    .date-grid { display: flex; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.01); }
+    .cell { width: 120px; min-width: 120px; border-right: 1px solid var(--border); text-align: center; padding: 8px 0; color: var(--muted); font-size: 11px; }
+    .cell strong { color: var(--sub); }
+    .lane { position: relative; height: 62px; border-bottom: 1px solid var(--border); }
+    .lane-label { position: absolute; left: 0; top: 0; width: 140px; height: 62px; display: flex; align-items: center; padding-left: 14px; border-right: 1px solid var(--border); background: rgba(255,255,255,0.01); font-size: 12px; color: var(--sub); }
+    .bar { position: absolute; top: 16px; left: 190px; height: 28px; border-radius: 8px; display: flex; align-items: center; padding: 0 10px; font-size: 12px; font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; box-shadow: 0 10px 18px rgba(0,0,0,0.12); }
+    .bar.yellow { background: linear-gradient(90deg, #d0c7a0, #b1f4d6); color: #0d1118; }
+    .bar.blue { background: linear-gradient(90deg, #8ac2ff, #90d2ff); color: #0d1118; }
+    .bar.green { background: linear-gradient(90deg, #9fe7bc, #82d6c0); color: #0d1118; }
+    .bar.red { background: linear-gradient(90deg, #fa8a7a, #e7a3a1); color: #0d1118; }
+    .bar .mark { margin-left: 6px; font-size: 14px; }
+    .today-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed rgba(122,162,255,0.8); }
+    .sidebar-right { width: 300px; border-left: 1px solid var(--border); background: rgba(255,255,255,0.01); }
+    .panel-head { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--sub); }
+    .impact { padding: 14px 16px; }
+    .summary-box { background: rgba(122,162,255,0.08); border: 1px solid rgba(122,162,255,0.2); color: var(--accent); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; margin-bottom: 14px; }
+    .impact-list { display: flex; flex-direction: column; gap: 10px; }
+    .impact-item { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .old { color: var(--muted); text-decoration: line-through; }
+    .new { color: var(--red); font-weight: 700; }
+    .muted { color: var(--muted); }
+    .badge { font-size: 10px; border-radius: 999px; padding: 3px 7px; border: 1px solid var(--border); }
+    .badge.warn { background: rgba(239,107,101,0.12); color: var(--red); border-color: rgba(239,107,101,0.25); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="leftops">
+        <select class="select"><option>전체 보드</option><option>인프라</option><option>프로덕트</option></select>
+        <button class="button">+ 새 보드</button>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; color:var(--sub); font-size:12px;">
+        <span>담당자</span>
+        <span class="badge warn">리스크만</span>
+        <span>4주</span>
+      </div>
+    </div>
+
+    <div class="board">
+      <aside class="leftrail">
+        <div class="row-header">담당자별</div>
+        <div class="assignee-list">
+          <div class="assignee active"><span class="dot" style="background:#8ab4ff"></span>김도현</div>
+          <div class="assignee"><span class="dot" style="background:#9be0c1"></span>이은지</div>
+          <div class="assignee"><span class="dot" style="background:#f8cf8a"></span>박서연</div>
+          <div class="assignee"><span class="dot" style="background:#dcb5ff"></span>최민준</div>
+        </div>
+      </aside>
+
+      <main class="timeline">
+        <div class="date-grid">
+          <div class="cell"><strong>8/10</strong><br>월</div>
+          <div class="cell"><strong>8/11</strong><br>화</div>
+          <div class="cell"><strong>8/12</strong><br>수</div>
+          <div class="cell"><strong>8/13</strong><br>목</div>
+          <div class="cell"><strong>8/14</strong><br>금</div>
+          <div class="cell"><strong>8/15</strong><br>토</div>
+          <div class="cell"><strong>8/16</strong><br>일</div>
+          <div class="cell">미정</div>
+        </div>
+
+        <div class="lane">
+          <div class="lane-label">김도현</div>
+          <div class="today-line" style="left: 730px;"></div>
+          <div class="bar blue" style="width: 280px;">API 게이트웨이 인증 <span class="mark">◆</span></div>
+        </div>
+
+        <div class="lane">
+          <div class="lane-label">이은지</div>
+          <div class="bar green" style="width: 240px; left: 400px;">리포트 자동 배포</div>
+        </div>
+
+        <div class="lane">
+          <div class="lane-label">박서연</div>
+          <div class="bar yellow" style="width: 220px; left: 260px;">마이그레이션 스크립트 안정화</div>
+        </div>
+
+        <div class="lane">
+          <div class="lane-label">최민준</div>
+          <div class="bar red" style="width: 180px; left: 550px;">결제 모듈 리팩토링</div>
+        </div>
+      </main>
+
+      <aside class="sidebar-right">
+        <div class="panel-head">임팩트 분석</div>
+        <div class="impact">
+          <div class="summary-box">결제 모듈 리팩토링이 3일 지연되면 4개 태스크, 3명의 담당자에게 영향이 예상됩니다.</div>
+          <div class="impact-list">
+            <div class="impact-item">
+              <div>
+                <div>리포트 자동 배포</div>
+                <div class="muted">이은지 · 8/14 → 8/17</div>
+              </div>
+              <span class="new">+3일</span>
+            </div>
+            <div class="impact-item">
+              <div>
+                <div>API 게이트웨이 인증</div>
+                <div class="muted">김도현 · 8/13 → 8/16</div>
+              </div>
+              <span class="new">+3일</span>
+            </div>
+            <div class="impact-item">
+              <div>
+                <div>마일스톤: 베타 출시</div>
+                <div class="muted">중요 경로 포함됨</div>
+              </div>
+              <span class="badge warn">영향</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</body>
+</html>

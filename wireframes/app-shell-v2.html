@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>smoothWork — IA v2 Wireframe</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #151a22;
+      --panel-2: #1b2330;
+      --panel-3: #202a38;
+      --border: #2a3444;
+      --text: #edf2ff;
+      --sub: #a8b0c1;
+      --muted: #7f8aa5;
+      --accent: #7aa2ff;
+      --accent-2: #dfe8ff;
+      --accent-soft: rgba(122,162,255,0.12);
+      --green: #43c99a;
+      --amber: #e7b75a;
+      --red: #ef6b65;
+      --shadow: rgba(0,0,0,0.26);
+      --radius: 14px;
+      --sidebar-w: 72px;
+      --chat-w: 320px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { overflow: hidden; }
+
+    .app-shell {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+      background: linear-gradient(180deg, #0f1115 0%, #121821 100%);
+    }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      background: #10161e;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0 10px;
+    }
+
+    .nav-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .nav-item {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--sub);
+      background: transparent;
+      border: 1px solid transparent;
+      font-size: 18px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .nav-item .label {
+      position: absolute;
+      left: 52px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #202a38;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 11px;
+      line-height: 1;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      box-shadow: 0 10px 20px var(--shadow);
+    }
+
+    .nav-item:hover .label,
+    .nav-item.active .label { opacity: 1; }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      border-color: rgba(122,162,255,0.5);
+      color: var(--accent-2);
+      box-shadow: inset 0 0 0 1px rgba(122,162,255,0.2);
+    }
+
+    .nav-item .mini {
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      margin-top: 2px;
+      color: var(--muted);
+    }
+
+    .nav-item.active .mini { color: var(--accent-2); }
+
+    .bottom-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sub);
+      background: #121b27;
+      font-size: 16px;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      min-width: 0;
+      overflow: hidden;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .content {
+      flex: 1;
+      min-width: 0;
+      padding: 18px 18px 0 18px;
+      overflow: auto;
+    }
+
+    .screen {
+      min-width: 760px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(18,24,33,0.9);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.01);
+    }
+
+    .topbar .title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .topbar .meta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      color: var(--sub);
+      font-size: 12px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--sub);
+    }
+
+    .today-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1.1fr;
+      min-height: 760px;
+    }
+
+    .pane {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .pane:last-child { border-right: none; }
+
+    .panel-header {
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-header h3 {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .count {
+      font-size: 12px;
+      color: var(--sub);
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+
+    .task-list {
+      padding: 10px 12px 0;
+      overflow: auto;
+    }
+
+    .task-group {
+      margin-bottom: 16px;
+    }
+
+    .task-group-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 8px 6px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .task-item:hover {
+      background: rgba(255,255,255,0.02);
+      border-color: rgba(122,162,255,0.15);
+    }
+
+    .task-item.selected {
+      background: rgba(122,162,255,0.08);
+      border-color: rgba(122,162,255,0.25);
+    }
+
+    .check {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1.5px solid var(--muted);
+      background: rgba(255,255,255,0.02);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .task-item.done .check {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .task-item.done .check::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 2px;
+      width: 5px;
+      height: 9px;
+      border: solid #041013;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .task-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-title {
+      font-size: 14px;
+      line-height: 1.3;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+
+    .task-meta {
+      margin-top: 4px;
+      font-size: 11.5px;
+      color: var(--sub);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .due-late {
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    .badge {
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .badge.warn {
+      background: rgba(239,107,101,0.12);
+      color: var(--red);
+      border-color: rgba(239,107,101,0.25);
+    }
+
+    .badge.neutral {
+      background: rgba(122,162,255,0.12);
+      color: var(--accent-2);
+      border-color: rgba(122,162,255,0.22);
+    }
+
+    .candidate-shell {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+
+    .candidate-list {
+      width: 40%;
+      border-right: 1px solid var(--border);
+      overflow: auto;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .candidate-item {
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .candidate-item.selected {
+      background: rgba(122,162,255,0.06);
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    .candidate-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .source-tag {
+      font-size: 10px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: #1d2735;
+      color: var(--sub);
+      border: 1px solid var(--border);
+    }
+
+    .confidence {
+      font-size: 10px;
+      color: var(--amber);
+      font-weight: 700;
+    }
+
+    .candidate-title {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    .candidate-sub {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .candidate-detail {
+      flex: 1;
+      overflow: auto;
+      padding: 14px 16px 18px;
+    }
+
+    .detail-card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 14px 12px;
+      margin-bottom: 12px;
+    }
+
+    .detail-card h4 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--sub);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .quote {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text);
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .field {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .field .label {
+      display: block;
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .field .value {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .button {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .button.primary {
+      background: var(--accent-soft);
+      color: var(--accent-2);
+      border-color: rgba(122,162,255,0.35);
+    }
+
+    .button.ghost {
+      background: transparent;
+      color: var(--sub);
+    }
+
+    .button.warn {
+      background: rgba(239,107,101,0.1);
+      color: var(--red);
+      border-color: rgba(239,107,101,0.22);
+    }
+
+    .chat-panel {
+      width: var(--chat-w);
+      border-left: 1px solid var(--border);
+      background: #121922;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .chat-header {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--sub);
+    }
+
+    .chat-toggle {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      color: var(--sub);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .chat-scroll {
+      flex: 1;
+      overflow: auto;
+      padding: 14px 14px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      max-width: 90%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      border: 1px solid var(--border);
+    }
+
+    .message.user {
+      background: rgba(122,162,255,0.12);
+      border-color: rgba(122,162,255,0.25);
+      align-self: flex-end;
+    }
+
+    .message.ai {
+      background: rgba(255,255,255,0.02);
+      color: var(--text);
+      align-self: flex-start;
+    }
+
+    .chat-input-wrap {
+      border-top: 1px solid var(--border);
+      padding: 12px 14px 14px;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .chat-input {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 12px 12px 46px;
+      resize: none;
+      font: inherit;
+    }
+
+    .chat-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .tool-mini {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .send-btn {
+      border: 1px solid rgba(122,162,255,0.3);
+      background: var(--accent-soft);
+      color: var(--accent-2);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    @media (max-width: 1200px) {
+      .chat-panel { display: none; }
+      .today-grid { grid-template-columns: 1fr; }
+      .screen { min-width: 680px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="nav-stack">
+        <div class="nav-item" title="Yesterday">
+          <div>◫</div>
+          <div class="mini">YES</div>
+          <div class="label">Yesterday</div>
+        </div>
+        <div class="nav-item active" title="Today">
+          <div>◫</div>
+          <div class="mini">TDY</div>
+          <div class="label">Today</div>
+        </div>
+        <div class="nav-item" title="Task">
+          <div>▦</div>
+          <div class="mini">TSK</div>
+          <div class="label">Task</div>
+        </div>
+        <div class="nav-item" title="Meeting">
+          <div>◌</div>
+          <div class="mini">MTG</div>
+          <div class="label">Meeting</div>
+        </div>
+        <div class="nav-item" title="Configuration">
+          <div>⚙</div>
+          <div class="mini">CFG</div>
+          <div class="label">Configuration</div>
+        </div>
+      </div>
+
+      <div class="bottom-badge">⋯</div>
+    </aside>
+
+    <div class="main">
+      <div class="content">
+        <div class="screen">
+          <div class="topbar">
+            <div class="title">Today</div>
+            <div class="meta">
+              <span class="chip">5 / 9 완료</span>
+              <span class="chip">3 pending</span>
+              <span class="chip">오늘 · 2026-08-13</span>
+            </div>
+          </div>
+
+          <div class="today-grid">
+            <section class="pane">
+              <div class="panel-header">
+                <h3>오늘 할 일</h3>
+                <span class="count">3 overdue · 5 active</span>
+              </div>
+
+              <div class="task-list">
+                <div class="task-group">
+                  <div class="task-group-label">지연됨</div>
+
+                  <div class="task-item selected">
+                    <div class="check"></div>
+                    <div class="task-main">
+                      <div class="task-title">결제 모듈 리팩토링</div>
+                      <div class="task-meta">
+                        <span class="due-late">8/10 마감</span>
+                        <span>최민준</span>
+                        <span class="badge warn">지연</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="task-item">
+                    <div class="check"></div>
+                    <div class="task-main">
+                      <div class="task-title">API 게이트웨이 인증 최종 검토</div>
+                      <div class="task-meta">
+                        <span class="due-late">8/11 마감</span>
+                        <span>김도현</span>
+                        <span class="badge warn">지연</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="task-group">
+                  <div class="task-group-label">오늘 마감 · 진행 중</div>
+
+                  <div class="task-item done">
+                    <div class="check"></div>
+                    <div class="task-main">
+                      <div class="task-title">인증 서버 스펙 검토</div>
+                      <div class="task-meta">
+                        <span>8/13 마감</span>
+                        <span>김도현</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="task-item">
+                    <div class="check"></div>
+                    <div class="task-main">
+                      <div class="task-title">리포트 자동 배포</div>
+                      <div class="task-meta">
+                        <span>8/14 마감</span>
+                        <span>이은지</span>
+                        <span class="badge neutral">진행중</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="task-item">
+                    <div class="check"></div>
+                    <div class="task-main">
+                      <div class="task-title">마이그레이션 스크립트 안정화</div>
+                      <div class="task-meta">
+                        <span>8/13 마감</span>
+                        <span>박서연</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="pane">
+              <div class="panel-header">
+                <h3>검토 대기</h3>
+                <span class="count">4 pending</span>
+              </div>
+
+              <div class="candidate-shell">
+                <div class="candidate-list">
+                  <div class="candidate-item selected">
+                    <div class="candidate-head">
+                      <span class="source-tag">WAV</span>
+                      <span class="confidence">92%</span>
+                    </div>
+                    <div class="candidate-title">결제 모듈 리팩토링 일정 조정 필요</div>
+                    <div class="candidate-sub">스프린트 회의 · 2026-08-11 15:20</div>
+                  </div>
+
+                  <div class="candidate-item">
+                    <div class="candidate-head">
+                      <span class="source-tag">Slack</span>
+                      <span class="confidence">86%</span>
+                    </div>
+                    <div class="candidate-title">인증 서버 스펙 문서 최종 리뷰</div>
+                    <div class="candidate-sub">#platform-infra · 2026-08-12 09:14</div>
+                  </div>
+
+                  <div class="candidate-item">
+                    <div class="candidate-head">
+                      <span class="source-tag">WAV</span>
+                      <span class="confidence">79%</span>
+                    </div>
+                    <div class="candidate-title">리포트 자동 배포 파이프라인 검증</div>
+                    <div class="candidate-sub">1:1 이은지 · 2026-08-11 11:05</div>
+                  </div>
+
+                  <div class="candidate-item">
+                    <div class="candidate-head">
+                      <span class="source-tag">Slack</span>
+                      <span class="confidence">72%</span>
+                    </div>
+                    <div class="candidate-title">온보딩 문서 정리 후 팀 리뷰 요청</div>
+                    <div class="candidate-sub">#tpm-sync · 2026-08-12 11:00</div>
+                  </div>
+                </div>
+
+                <div class="candidate-detail">
+                  <div class="detail-card">
+                    <h4>원본 발화</h4>
+                    <div class="quote">
+                      “QA 환경이 8/19 쯤 끝날 것 같아서, 결제 모듈 리팩토링 마감이랑 겹치는데 일정 조정이 필요할 것 같아요.”
+                    </div>
+                    <div class="field-row">
+                      <div class="field">
+                        <span class="label">예상 제목</span>
+                        <span class="value">결제 모듈 리팩토링 일정 조정</span>
+                      </div>
+                      <div class="field">
+                        <span class="label">의존관계</span>
+                        <span class="value">blocks: 리포트 자동 배포</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="detail-card">
+                    <h4>추정 필드</h4>
+                    <div class="field-row">
+                      <div class="field">
+                        <span class="label">담당자</span>
+                        <span class="value">최민준</span>
+                      </div>
+                      <div class="field">
+                        <span class="label">마감일</span>
+                        <span class="value">2026-08-16</span>
+                      </div>
+                    </div>
+                    <div class="action-row">
+                      <button class="button primary">승인</button>
+                      <button class="button ghost">수정 후 승인</button>
+                      <button class="button warn">반려</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <aside class="chat-panel">
+        <div class="chat-header">
+          <span>LLM 채팅</span>
+          <span class="chat-toggle">⟨</span>
+        </div>
+
+        <div class="chat-scroll">
+          <div class="message ai">
+            오늘 진행 중인 태스크를 기준으로, 결제 모듈 리팩토링이 가장 큰 리스크입니다. QA 환경이 지연되면 리포트 배포까지 같이 밀릴 가능성이 있습니다.
+          </div>
+          <div class="message user">
+            오늘 validation에서 가장 우선순위가 높은 건 무엇인가요?
+          </div>
+          <div class="message ai">
+            우선순위는 1) 결제 모듈 일정 조정, 2) API 인증 검토, 3) 리포트 자동 배포입니다. 각 항목은 오늘의 pending 후보와 연결돼 있습니다.
+          </div>
+        </div>
+
+        <div class="chat-input-wrap">
+          <textarea class="chat-input" placeholder="오늘의 상황을 기준으로 질문을 입력하세요..."></textarea>
+          <div class="chat-actions">
+            <div class="tool-mini">읽기 전용 · Context: Today</div>
+            <button class="send-btn">전송</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</body>
+</html>

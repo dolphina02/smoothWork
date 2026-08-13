@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>smoothWork — Configuration Wireframe</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #151a22;
+      --panel-2: #1b2330;
+      --panel-3: #202a38;
+      --border: #2a3444;
+      --text: #edf2ff;
+      --sub: #a8b0c1;
+      --muted: #7f8aa5;
+      --accent: #7aa2ff;
+      --accent-2: #dfe8ff;
+      --accent-soft: rgba(122,162,255,0.12);
+      --green: #43c99a;
+      --green-soft: rgba(67,201,154,0.14);
+      --amber: #e7b75a;
+      --amber-soft: rgba(231,183,90,0.14);
+      --red: #ef6b65;
+      --red-soft: rgba(239,107,101,0.12);
+      --shadow: rgba(0,0,0,0.26);
+      --radius: 14px;
+      --sidebar-w: 72px;
+      --chat-w: 320px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { overflow: hidden; }
+
+    .app-shell {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+      background: linear-gradient(180deg, #0f1115 0%, #121821 100%);
+    }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      background: #10161e;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0 10px;
+    }
+
+    .nav-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .nav-item {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sub);
+      background: transparent;
+      border: 1px solid transparent;
+      font-size: 18px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      border-color: rgba(122,162,255,0.5);
+      color: var(--accent-2);
+      box-shadow: inset 0 0 0 1px rgba(122,162,255,0.2);
+    }
+
+    .nav-item .label {
+      position: absolute;
+      left: 52px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #202a38;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 11px;
+      line-height: 1;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 0 10px 20px var(--shadow);
+    }
+
+    .nav-item:hover .label, .nav-item.active .label { opacity: 1; }
+
+    .bottom-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sub);
+      background: #121b27;
+      font-size: 16px;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      min-width: 0;
+      overflow: hidden;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .content {
+      flex: 1;
+      min-width: 0;
+      padding: 18px 18px 0 18px;
+      overflow: auto;
+    }
+
+    .screen {
+      min-width: 820px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(18,24,33,0.9);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.01);
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--sub);
+      font-size: 12px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--sub);
+    }
+
+    .chip.success { background: var(--green-soft); border-color: rgba(67,201,154,0.4); color: #baf2d9; }
+    .chip.warn { background: var(--amber-soft); border-color: rgba(231,183,90,0.6); color: #f9d988; }
+
+    .config-wrap {
+      padding: 20px 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .card {
+      background: rgba(21,26,34,0.92);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.01);
+    }
+
+    .card-header h3 {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .mini-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: #1b2431;
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .button.primary {
+      background: rgba(122,162,255,0.16);
+      border-color: rgba(122,162,255,0.5);
+      color: var(--accent-2);
+    }
+
+    .button.danger {
+      border-color: rgba(239,107,101,0.45);
+      background: rgba(239,107,101,0.08);
+      color: #ffc1bf;
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(67,201,154,0.4);
+      background: var(--green-soft);
+      color: #baf2d9;
+      font-size: 12px;
+    }
+
+    .status-banner.warn {
+      border-color: rgba(231,183,90,0.6);
+      background: var(--amber-soft);
+      color: #f9d988;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--sub);
+      letter-spacing: 0.02em;
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      background: rgba(9,12,16,0.7);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: rgba(122,162,255,0.65);
+      box-shadow: 0 0 0 3px rgba(122,162,255,0.12);
+    }
+
+    .radio-row {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      padding-top: 4px;
+      color: var(--sub);
+      font-size: 13px;
+    }
+
+    .radio {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .radio input { accent-color: var(--accent); }
+
+    .token-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .token-box .input {
+      flex: 1;
+    }
+
+    .inline-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+      padding: 12px;
+    }
+
+    .metric .k {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .metric .v {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .channel-row {
+      display: grid;
+      grid-template-columns: 1.2fr auto auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .channel-name { font-weight: 600; }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      color: var(--sub);
+    }
+
+    .toggle.on {
+      background: var(--green-soft);
+      border-color: rgba(67,201,154,0.4);
+      color: #baf2d9;
+    }
+
+    .toggle.off {
+      background: rgba(255,255,255,0.02);
+      color: var(--sub);
+    }
+
+    .list-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .subtle {
+      color: var(--sub);
+      font-size: 12px;
+    }
+
+    .toggle-stack {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toggle-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      color: var(--sub);
+      font-size: 12px;
+    }
+
+    .toggle-item input { accent-color: var(--accent); }
+
+    .footer-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .chat-panel {
+      width: var(--chat-w);
+      background: rgba(15,19,26,0.96);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--sub);
+    }
+
+    .chat-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+      overflow: auto;
+    }
+
+    .message {
+      max-width: 92%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      line-height: 1.4;
+      border: 1px solid var(--border);
+    }
+
+    .message.user {
+      background: rgba(122,162,255,0.08);
+      border-color: rgba(122,162,255,0.35);
+      margin-left: auto;
+    }
+
+    .message.ai {
+      background: rgba(255,255,255,0.02);
+      margin-right: auto;
+    }
+
+    .chat-input {
+      border-top: 1px solid var(--border);
+      padding: 12px 12px 14px;
+    }
+
+    .chat-input textarea {
+      resize: none;
+      width: 100%;
+      min-height: 74px;
+      background: rgba(9,12,16,0.7);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="nav-stack">
+        <div class="nav-item" title="Yesterday"><span>◫</span><span class="label">Yesterday</span></div>
+        <div class="nav-item" title="Today"><span>◌</span><span class="label">Today</span></div>
+        <div class="nav-item" title="Task"><span>▣</span><span class="label">Task</span></div>
+        <div class="nav-item" title="Meeting"><span>◍</span><span class="label">Meeting</span></div>
+        <div class="nav-item active" title="Configuration"><span>⚙</span><span class="label">Configuration</span></div>
+      </div>
+      <div class="bottom-badge">⌁</div>
+    </aside>
+
+    <main class="main">
+      <div class="content">
+        <div class="screen">
+          <div class="topbar">
+            <div class="title">Configuration</div>
+            <div class="status-row">
+              <span class="chip success">LLM ready</span>
+              <span class="chip success">Outlook connected</span>
+              <span class="chip">Slack 3 channels</span>
+            </div>
+          </div>
+
+          <div class="config-wrap">
+            <section class="card">
+              <div class="card-header">
+                <h3>LLM model settings</h3>
+                <div class="mini-actions">
+                  <span class="chip success">Connected</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="status-banner">
+                  <span>Provider is active and last summary generation succeeded.</span>
+                  <span>Updated 2 minutes ago</span>
+                </div>
+
+                <div class="two-col">
+                  <div class="field">
+                    <label>Provider</label>
+                    <div class="radio-row">
+                      <label class="radio"><input type="radio" name="provider" checked /> Local</label>
+                      <label class="radio"><input type="radio" name="provider" /> External</label>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>Model</label>
+                    <input class="input" value="llama3.1:8b" />
+                  </div>
+                </div>
+
+                <div class="two-col">
+                  <div class="field">
+                    <label>Endpoint</label>
+                    <input class="input" value="http://localhost:11434/v1" />
+                  </div>
+                  <div class="field">
+                    <label>Timeout</label>
+                    <input class="input" value="30s" />
+                  </div>
+                </div>
+
+                <div class="two-col">
+                  <div class="field">
+                    <label>API key</label>
+                    <div class="token-box">
+                      <input class="input" value="••••••••••••••••••" />
+                      <button class="button">Mask</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>Temperature</label>
+                    <input class="input" value="0.2" />
+                  </div>
+                </div>
+
+                <div class="footer-actions">
+                  <button class="button">Test connection</button>
+                  <button class="button primary">Save</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-header">
+                <h3>Outlook integration</h3>
+                <div class="mini-actions">
+                  <span class="chip success">Connected</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="status-banner">
+                  <span>Connected as daisy.lee@company.com · Last sync 3 minutes ago</span>
+                  <span>Sync window: 7d past / 30d future</span>
+                </div>
+
+                <div class="inline-metrics">
+                  <div class="metric">
+                    <span class="k">Account</span>
+                    <span class="v">daisy.lee@...</span>
+                  </div>
+                  <div class="metric">
+                    <span class="k">Polling</span>
+                    <span class="v">5 min</span>
+                  </div>
+                  <div class="metric">
+                    <span class="k">Sync status</span>
+                    <span class="v">Healthy</span>
+                  </div>
+                </div>
+
+                <div class="footer-actions">
+                  <button class="button">Re-authenticate</button>
+                  <button class="button danger">Disconnect</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-header">
+                <h3>Slack workspace</h3>
+                <div class="mini-actions">
+                  <span class="chip success">Connected</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="two-col">
+                  <div class="field">
+                    <label>Workspace</label>
+                    <input class="input" value="acme-inc" />
+                  </div>
+                  <div class="field">
+                    <label>OAuth status</label>
+                    <input class="input" value="connected" />
+                  </div>
+                </div>
+
+                <div class="footer-actions" style="justify-content: space-between; align-items: center;">
+                  <div class="subtle">Tracked channels</div>
+                  <button class="button primary">+ Add channel</button>
+                </div>
+
+                <div class="list">
+                  <div class="channel-row">
+                    <div class="channel-name">#platform-infra</div>
+                    <span class="toggle on">Active</span>
+                    <button class="button">Disable</button>
+                    <button class="button danger">Remove</button>
+                  </div>
+                  <div class="channel-row">
+                    <div class="channel-name">#engineering-daily</div>
+                    <span class="toggle on">Active</span>
+                    <button class="button">Disable</button>
+                    <button class="button danger">Remove</button>
+                  </div>
+                  <div class="channel-row">
+                    <div class="channel-name">#random</div>
+                    <span class="toggle off">Inactive</span>
+                    <button class="button">Enable</button>
+                    <button class="button danger">Remove</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-header">
+                <h3>Alarm settings</h3>
+                <div class="mini-actions">
+                  <span class="chip">2 alerts active</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="two-col">
+                  <div class="field">
+                    <label>Daily brief time</label>
+                    <input class="input" value="08:30" />
+                  </div>
+                  <div class="field">
+                    <label>Priority threshold</label>
+                    <input class="input" value="3" />
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label>Alert destinations</label>
+                  <div class="toggle-stack">
+                    <label class="toggle-item"><input type="checkbox" checked /> Email</label>
+                    <label class="toggle-item"><input type="checkbox" checked /> Slack</label>
+                    <label class="toggle-item"><input type="checkbox" /> Webhook</label>
+                    <label class="toggle-item"><input type="checkbox" /> Desktop</label>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label>Events</label>
+                  <div class="toggle-stack">
+                    <label class="toggle-item"><input type="checkbox" checked /> Summary failure</label>
+                    <label class="toggle-item"><input type="checkbox" checked /> Meeting change</label>
+                    <label class="toggle-item"><input type="checkbox" /> Follow-up due</label>
+                  </div>
+                </div>
+
+                <div class="footer-actions">
+                  <button class="button">Send test alert</button>
+                  <button class="button primary">Save</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <aside class="chat-panel">
+        <div class="chat-header">
+          <span>AI assistant</span>
+          <span class="chip">Context</span>
+        </div>
+        <div class="chat-body">
+          <div class="message ai">Configuration is synced. Outlook and Slack are connected. Want me to check if any integration needs attention?</div>
+          <div class="message user">Show me the current sync health and alert settings.</div>
+          <div class="message ai">Outlook sync is healthy, Slack has 3 tracked channels, and alerts are enabled for summary failures and calendar changes.</div>
+        </div>
+        <div class="chat-input">
+          <textarea>Ask about connectivity, auth, or alert policies…</textarea>
+        </div>
+      </aside>
+    </main>
+  </div>
+</body>
+</html>

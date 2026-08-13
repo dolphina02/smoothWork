@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Yesterday v2 Wireframe</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #151b22;
+      --panel-2: #1a2330;
+      --border: #2a3443;
+      --text: #edf3ff;
+      --sub: #b2bfd5;
+      --muted: #7f8ca5;
+      --accent: #7aa2ff;
+      --accent-soft: rgba(122,162,255,0.12);
+      --green: #49c59d;
+      --amber: #e7b75a;
+      --red: #ef6b65;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    body { overflow: hidden; }
+    .shell { display: flex; height: 100vh; }
+    .left-panel { width: 340px; border-right: 1px solid var(--border); background: #101820; }
+    .datebar { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .nav-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--sub); font-weight: 700; }
+    .date-box { display: flex; flex-direction: column; align-items: center; font-size: 13px; }
+    .date-box strong { font-size: 15px; }
+    .tabs { display: flex; gap: 8px; padding: 12px 16px 8px; border-bottom: 1px solid var(--border); }
+    .tab { flex: 1; text-align: center; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--sub); font-size: 12px; }
+    .tab.active { background: var(--accent-soft); color: var(--text); border-color: rgba(122,162,255,0.35); }
+    .list { padding: 8px 10px; overflow: auto; height: calc(100vh - 160px); }
+    .card { border: 1px solid var(--border); background: rgba(255,255,255,0.01); border-radius: 12px; padding: 10px 10px 8px; margin-bottom: 10px; cursor: pointer; }
+    .card.active { background: rgba(122,162,255,0.06); border-color: rgba(122,162,255,0.28); }
+    .meta { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--sub); margin-bottom: 6px; }
+    .pill { border-radius: 999px; padding: 3px 7px; font-size: 10px; border: 1px solid var(--border); }
+    .pill.done { background: rgba(73,197,157,0.12); color: var(--green); border-color: rgba(73,197,157,0.3); }
+    .pill.pending { background: rgba(122,162,255,0.12); color: var(--accent); border-color: rgba(122,162,255,0.3); }
+    .pill.no { background: rgba(255,255,255,0.03); color: var(--muted); }
+    .title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .sub { font-size: 12px; color: var(--muted); }
+    .detail { flex: 1; background: rgba(255,255,255,0.01); overflow: auto; }
+    .header { padding: 20px 26px 14px; border-bottom: 1px solid var(--border); }
+    .header h2 { margin: 0; font-size: 22px; letter-spacing: -0.03em; }
+    .header .row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; color: var(--sub); font-size: 12px; }
+    .banner { margin: 16px 26px 0; background: rgba(231,183,90,0.1); border: 1px solid rgba(231,183,90,0.35); color: var(--amber); border-radius: 12px; padding: 10px 12px; font-size: 12.5px; }
+    .detail-body { padding: 18px 26px 40px; }
+    .summary { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+    .summary-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .summary-head h3 { margin: 0; font-size: 14px; }
+    .badge { padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+    .badge.ai { background: rgba(122,162,255,0.12); color: var(--accent); }
+    .badge.edited { background: rgba(231,183,90,0.12); color: var(--amber); }
+    .summary-text { font-size: 14px; line-height: 1.8; color: var(--text); }
+    .toggle { display: inline-block; margin-top: 14px; color: var(--accent); font-size: 12px; cursor: pointer; }
+    .raw { margin-top: 12px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 12px; font-size: 13px; line-height: 1.7; color: var(--sub); }
+    .followups { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .followup-chip { border: 1px solid var(--border); border-radius: 999px; padding: 6px 10px; background: rgba(255,255,255,0.02); color: var(--sub); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="left-panel">
+      <div class="datebar">
+        <button class="nav-btn">◀</button>
+        <div class="date-box">
+          <strong>2026-08-12</strong>
+          <span>어제</span>
+        </div>
+        <button class="nav-btn">▶</button>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active">미팅</div>
+        <div class="tab">Slack</div>
+        <div class="tab">Follow-up</div>
+      </div>
+
+      <div class="list">
+        <div class="card active">
+          <div class="meta"><span>10:00</span><span class="pill done">요약 완료</span></div>
+          <div class="title">스프린트 플래닝</div>
+          <div class="sub">Outlook · 참석자 5명</div>
+        </div>
+
+        <div class="card">
+          <div class="meta"><span>14:00</span><span class="pill no">녹음 없음</span></div>
+          <div class="title">고객 데모 준비</div>
+          <div class="sub">캘린더 일정만 있음</div>
+        </div>
+
+        <div class="card">
+          <div class="meta"><span>15:30</span><span class="pill pending">처리 중</span></div>
+          <div class="title">결제 모듈 리뷰</div>
+          <div class="sub">녹음 업로드 대기</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="detail">
+      <div class="header">
+        <h2>스프린트 플래닝</h2>
+        <div class="row">
+          <span>2026-08-12 10:00 ~ 10:45</span>
+          <span>참석자: 김도현, 이은지, 박서연, 최민준</span>
+        </div>
+      </div>
+
+      <div class="banner">Outlook 일정과 녹음이 연결되어 있습니다. 요약은 AI 생성 상태이며 사용자가 편집한 적은 없습니다.</div>
+
+      <div class="detail-body">
+        <div class="summary">
+          <div class="summary-head">
+            <h3>요약</h3>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span class="badge ai">AI 생성</span>
+              <button style="background:transparent;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:5px 8px;">다시 생성</button>
+            </div>
+          </div>
+          <div class="summary-text">
+            이번 스프린트 목표를 API 게이트웨이 인증과 리포트 자동 배포로 정했습니다. 결제 모듈 리팩토링은 QA 환경 세팅이 끝난 뒤 착수하기로 합의했고, 일정 상 8/14부터 우선순위를 다시 조정하는 것이 적절하다고 판단했습니다.
+          </div>
+          <div class="toggle">펼쳐서 원문 보기</div>
+          <div class="raw">
+            김도현: &ldquo;이번 스프린트는 인증 붙이는 거랑 리포트 자동 배포를 메인으로 가져가면 좋을 것 같아요.&rdquo;<br>
+            이은지: &ldquo;리포트 쪽은 목요일까지 초안 만들어볼게요.&rdquo;<br>
+            박서연: &ldquo;결제 모듈은 QA 환경 세팅이 아직 안 끝나서, 그거 먼저 봐야 합니다.&rdquo;
+          </div>
+        </div>
+
+        <div class="followups">
+          <div class="followup-chip">후속 작업 3건</div>
+          <div class="followup-chip">#platform-infra</div>
+          <div class="followup-chip">#reporting</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
