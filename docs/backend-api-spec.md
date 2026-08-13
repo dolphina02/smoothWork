@@ -19,7 +19,7 @@ architecture.md 2.4/4절에서 정의한 대로 이 레이어는 Frontend와 강
 
 ### 2.2 동기화 주기
 - 폴링 방식, 기본 5분 주기로 Graph API `/me/events` 조회 (Digest 헤더의 "마지막 동기화 시각"
-  표시와 연결, Digest 8절)
+  표시와 연결, Digest 9절)
 - 조회 범위: 오늘 기준 과거 7일 ~ 미래 7일 (Digest 날짜 네비게이터가 실제로 오가는 범위를 커버)
 - 변경분만 가져오는 delta query를 우선 사용하고, delta token이 만료/무효화된 경우 전체 재조회로
   폴백한다
@@ -146,7 +146,7 @@ Digest 5.4절 업로드 모달에서 Outlook 일정을 선택하는 경우는 �
 
 | 엔드포인트 | 반환 | 사용처 |
 |---|---|---|
-| `GET /sync/status` | 마지막 Outlook 동기화 성공 시각, 최근 에러 유무 | Digest 헤더의 동기화 상태 표시, Digest 8절 "Outlook 동기화 실패" 배너 |
+| `GET /sync/status` | 마지막 Outlook 동기화 성공 시각, 최근 에러 유무 | Digest 헤더의 동기화 상태 표시, Digest 9절 "Outlook 동기화 실패" 배너 |
 
 ## 6. 에러 처리
 

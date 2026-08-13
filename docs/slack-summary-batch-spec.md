@@ -88,7 +88,7 @@ slack_daily_summaries upsert
 - **Slack API 실패**(레이트리밋/네트워크): 해당 채널만 스킵하고 로그를 남긴 뒤 나머지 채널은
   계속 진행 (배치 전체를 중단하지 않음)
 - **LLM 요약 실패**: `slack_daily_summaries` row는 `message_count`만 채운 채 `content_md=null`로
-  저장 → Digest 화면에서 "에러 상태 + 재시도" (Digest 8절과 동일 기조)
+  저장 → Digest 화면에서 "에러 상태 + 재시도" (Digest 9절과 동일 기조)
 - **배치 자체가 실행되지 않음**(스케줄러 다운 등): 별도 알림은 8절 backlog, v1은 로그만 남긴다
 
 ## 8. v1 범위 밖 (backlog)

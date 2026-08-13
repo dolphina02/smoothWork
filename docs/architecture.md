@@ -2,10 +2,11 @@
 
 ## 1. 목적
 
-Digest(및 Inbox/Board/Reports)를 실제로 동작시키려면 화면 스펙만으로는 부족하고, 데이터를
-채워 넣는 배치/파이프라인과 그걸 조회하는 API 레이어가 필요하다. 이 문서는 필요한 컴포넌트를
-나열하고, 특히 **"서비스 자체가 쓰는 백엔드"와 "LLM/외부 에이전트가 쓰는 MCP 툴"을 의도적으로
-분리**하는 이유와 경계를 정의한다.
+Yesterday/Today/Task/Meeting/Configuration(앱 셸 기준 IA, app-shell-spec.md)을 실제로
+동작시키려면 화면 스펙만으로는 부족하고, 데이터를 채워 넣는 배치/파이프라인과 그걸 조회하는
+API 레이어가 필요하다. 이 문서는 필요한 컴포넌트를 나열하고, 특히 **"서비스 자체가 쓰는
+백엔드"와 "LLM/외부 에이전트가 쓰는 MCP 툴"을 의도적으로 분리**하는 이유와 경계를 정의한다.
+(Reports는 이번 IA 개편 범위 밖 — 5절 참고)
 
 각 컴포넌트의 상세 설계(API 스펙, 배치 스케줄, 에러 처리 등)는 이 문서 범위 밖이며, 필요해지는
 시점에 별도 문서로 분리한다.
@@ -15,7 +16,7 @@ Digest(및 Inbox/Board/Reports)를 실제로 동작시키려면 화면 스펙만
 ### 2.1 Slack 요약 배치 프로세스
 - 채널별로 메시지를 가져와서(Digest 3절, 새벽 5시~다음날 5시 경계 기준) LLM 요약을 호출하고
   `slack_daily_summaries`(Digest 2.3절)에 저장
-- 매일 새벽 5시, 직전 하루치를 대상으로 자동 실행 (Digest 7절)
+- 매일 새벽 5시, 직전 하루치를 대상으로 자동 실행 (Digest 8절)
 
 ### 2.2 회의 STT+요약 파이프라인
 - wav/mp3 입력 → STT 변환 → 회의 전체 내용을 LLM이 요약 → `meetings.summary_md`에 저장
@@ -26,7 +27,13 @@ Digest(및 Inbox/Board/Reports)를 실제로 동작시키려면 화면 스펙만
   입력으로 공유할 수는 있지만 목적과 출력이 다르므로 혼동하지 않는다
 
 ### 2.3 Frontend 서비스
-- Inbox / Board / Reports / Digest 화면 전체, Digest 5.4절의 "회의 녹음 업로드" 인터페이스 포함
+- app-shell-spec.md가 정의하는 앱 셸(좌측 아이콘 사이드바 + 우측 고정 LLM 채팅) 위에 화면
+  5개가 얹힌다: **Yesterday**(digest-spec.md, 옛 Digest — 미팅/Slack/Follow-up Task 탭),
+  **Today**(today-spec.md — to-do list + 옛 Inbox 흡수), **Task**(task-spec.md, board-spec.md
+  래핑 — 멀티 보드), **Meeting**(meeting-list-spec.md — Outlook 일정 전체 브라우징),
+  **Configuration**(configuration-spec.md — Outlook/LLM/Slack 채널 설정)
+- 옛 Inbox 화면은 Today로 흡수되었고, Reports는 이번 IA 개편 범위 밖으로 별도 논의 대상이다
+- Digest 5.4절의 "회의 녹음 업로드" 인터페이스도 이 서비스에 포함
 - 2.4(서비스 백엔드)에만 의존한다. 2.5(MCP/조회 API)는 프론트엔드가 직접 호출하지 않는다
 
 ### 2.4 서비스 백엔드 (Backend-for-Frontend)
@@ -72,5 +79,11 @@ DB <-- 2.5 MCP/조회 API <-- 외부 LLM/에이전트
 
 - [`docs/slack-summary-batch-spec.md`](slack-summary-batch-spec.md) (2.1)
 - [`docs/stt-pipeline-spec.md`](stt-pipeline-spec.md) (2.2)
+- 2.3 Frontend: [`docs/app-shell-spec.md`](app-shell-spec.md) (앱 셸) +
+  [`docs/digest-spec.md`](digest-spec.md) (Yesterday) +
+  [`docs/today-spec.md`](today-spec.md) (Today) +
+  [`docs/task-spec.md`](task-spec.md) (Task) +
+  [`docs/meeting-list-spec.md`](meeting-list-spec.md) (Meeting) +
+  [`docs/configuration-spec.md`](configuration-spec.md) (Configuration)
 - [`docs/backend-api-spec.md`](backend-api-spec.md) (2.4)
 - [`docs/mcp-tool-spec.md`](mcp-tool-spec.md) (2.5)
