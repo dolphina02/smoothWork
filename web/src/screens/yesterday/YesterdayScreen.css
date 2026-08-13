@@ -1,0 +1,145 @@
+.y-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 16px;
+}
+
+.datebar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--sub);
+  font-weight: 700;
+}
+
+.date-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+  min-width: 92px;
+}
+
+.date-box strong {
+  font-size: 15px;
+}
+
+.date-box span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.y-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.y-tab {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--sub);
+  font-size: 12.5px;
+}
+
+.y-tab.active {
+  background: var(--accent-soft);
+  color: var(--text);
+  border-color: rgba(122, 162, 255, 0.35);
+}
+
+.y-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.y-list-panel {
+  width: 320px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  overflow: auto;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.y-card {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.01);
+  border-radius: 12px;
+  padding: 10px 10px 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  display: block;
+}
+
+.y-card.active {
+  background: rgba(122, 162, 255, 0.06);
+  border-color: rgba(122, 162, 255, 0.28);
+}
+
+.y-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--sub);
+  margin-bottom: 6px;
+}
+
+.pill {
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-size: 10px;
+  border: 1px solid var(--border);
+}
+
+.pill.done {
+  background: rgba(73, 197, 157, 0.12);
+  color: var(--green);
+  border-color: rgba(73, 197, 157, 0.3);
+}
+
+.pill.pending {
+  background: rgba(122, 162, 255, 0.12);
+  color: var(--accent);
+  border-color: rgba(122, 162, 255, 0.3);
+}
+
+.pill.no {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+}
+
+.pill.warn {
+  background: var(--amber-soft);
+  color: var(--amber);
+  border-color: rgba(231, 183, 90, 0.35);
+}
+
+.y-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.y-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+

@@ -1,0 +1,143 @@
+:root {
+  --bg: #0f1115;
+  --panel: #151a22;
+  --panel-2: #1b2330;
+  --panel-3: #202a38;
+  --border: #2a3444;
+  --text: #edf2ff;
+  --sub: #a8b0c1;
+  --muted: #7f8aa5;
+  --accent: #7aa2ff;
+  --accent-2: #dfe8ff;
+  --accent-soft: rgba(122, 162, 255, 0.12);
+  --green: #43c99a;
+  --green-soft: rgba(67, 201, 154, 0.14);
+  --amber: #e7b75a;
+  --amber-soft: rgba(231, 183, 90, 0.14);
+  --red: #ef6b65;
+  --red-soft: rgba(239, 107, 101, 0.12);
+  --shadow: rgba(0, 0, 0, 0.26);
+  --radius: 14px;
+  --sidebar-w: 72px;
+  --chat-w: 320px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Pretendard', 'Malgun Gothic', sans-serif;
+}
+
+body {
+  overflow: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--sub);
+  font-size: 12px;
+}
+.chip.success {
+  background: var(--green-soft);
+  border-color: rgba(67, 201, 154, 0.4);
+  color: #baf2d9;
+}
+.chip.warn {
+  background: var(--amber-soft);
+  border-color: rgba(231, 183, 90, 0.6);
+  color: #f9d988;
+}
+
+.badge {
+  font-size: 10px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.badge.warn {
+  background: rgba(239, 107, 101, 0.12);
+  color: var(--red);
+  border-color: rgba(239, 107, 101, 0.25);
+}
+.badge.neutral {
+  background: rgba(122, 162, 255, 0.12);
+  color: var(--accent-2);
+  border-color: rgba(122, 162, 255, 0.22);
+}
+.badge.ai {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.badge.edited {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.button {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #1b2431;
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.button:hover {
+  border-color: rgba(122, 162, 255, 0.4);
+}
+.button.primary {
+  background: rgba(122, 162, 255, 0.16);
+  border-color: rgba(122, 162, 255, 0.5);
+  color: var(--accent-2);
+}
+.button.ghost {
+  background: transparent;
+  color: var(--sub);
+}
+.button.danger {
+  border-color: rgba(239, 107, 101, 0.45);
+  background: rgba(239, 107, 101, 0.08);
+  color: #ffc1bf;
+}
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
