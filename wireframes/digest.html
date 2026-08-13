@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>Digest — TPM Task Triage (Wireframe)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0f1115; --panel: #161923; --panel-2: #1c202c; --border: #2a2f3d;
+    --text: #e8eaf0; --text-dim: #9298a8; --text-faint: #656c7d;
+    --accent: #6c8dff; --accent-dim: #2c3350;
+    --green: #3ecf8e; --amber: #e8b64c; --red: #f0665e;
+    --radius: 10px; font-size: 15px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: -apple-system,"Segoe UI","Pretendard","Malgun Gothic",sans-serif; }
+  body { display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px;
+    border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  header h1 { font-size: 15px; font-weight: 600; margin: 0; }
+  header .sync-note { font-size: 11.5px; color: var(--text-faint); }
+
+  main { flex: 1; display: flex; min-height: 0; }
+
+  /* ---------- 좌측 ---------- */
+  .list-panel { width: 300px; flex-shrink: 0; border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; min-height: 0; }
+
+  .date-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;
+    border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .date-nav button { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--text-dim); cursor: pointer; font-size: 13px; }
+  .date-nav button:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+  .date-nav button:disabled { opacity: .35; cursor: not-allowed; }
+  .date-nav .date-label { font-size: 13.5px; font-weight: 600; display: flex; flex-direction: column; align-items: center; }
+  .date-nav .weekday { font-size: 10.5px; color: var(--text-faint); font-weight: 400; }
+  .date-nav .today-tag { font-size: 9.5px; padding: 1px 6px; border-radius: 999px; background: var(--accent-dim); color: var(--accent); margin-top: 2px; }
+
+  .list-scroll { flex: 1; overflow-y: auto; }
+  .section-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: .04em;
+    padding: 12px 14px 6px; }
+  .empty-section { padding: 4px 14px 10px; font-size: 12px; color: var(--text-faint); }
+
+  .item-card { display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border);
+    cursor: pointer; }
+  .item-card:hover { background: var(--panel-2); }
+  .item-card.selected { background: var(--panel-2); box-shadow: inset 3px 0 0 var(--accent); }
+  .item-body { min-width: 0; flex: 1; }
+  .item-top { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-faint); margin-bottom: 3px; }
+  .item-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-sub { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
+
+  .status-pill { font-size: 9.5px; padding: 1px 6px; border-radius: 999px; white-space: nowrap; }
+  .status-pill.done { background: rgba(62,207,142,.12); color: var(--green); border: 1px solid rgba(62,207,142,.3); }
+  .status-pill.norecording { background: var(--panel-2); color: var(--text-faint); border: 1px solid var(--border); }
+  .status-pill.unmatched { background: rgba(232,182,76,.12); color: var(--amber); border: 1px solid rgba(232,182,76,.3); }
+  .status-pill.pending { background: var(--accent-dim); color: var(--accent); }
+
+  /* ---------- 우측 ---------- */
+  .detail-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow-y: auto; }
+  .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-dim); gap: 8px; }
+
+  .detail-head { padding: 18px 24px; border-bottom: 1px solid var(--border); }
+  .detail-title { font-size: 16px; font-weight: 600; }
+  .detail-meta { font-size: 12px; color: var(--text-dim); margin-top: 6px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .detail-meta span { display: inline-flex; align-items: center; gap: 4px; }
+
+  .match-banner { margin: 12px 24px 0; padding: 8px 12px; border-radius: 8px; background: rgba(232,182,76,.1);
+    border: 1px solid rgba(232,182,76,.35); color: var(--amber); font-size: 12.5px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .match-banner button { font-size: 11.5px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--amber);
+    background: transparent; color: var(--amber); cursor: pointer; }
+  .match-picker { display: none; margin: 8px 24px 0; padding: 10px 12px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--border); }
+  .match-picker.show { display: block; }
+  .match-picker .opt { padding: 7px 8px; border-radius: 6px; font-size: 12.5px; cursor: pointer; display: flex; justify-content: space-between; }
+  .match-picker .opt:hover { background: var(--panel); color: var(--accent); }
+
+  .body-scroll { flex: 1; padding: 18px 24px; }
+
+  .summary-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 14px; }
+  .summary-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .summary-card-head h3 { font-size: 13.5px; margin: 0; }
+  .ai-badge { font-size: 10px; padding: 1px 7px; border-radius: 999px; background: var(--accent-dim); color: var(--accent); }
+  .edited-badge { font-size: 10px; padding: 1px 7px; border-radius: 999px; background: rgba(232,182,76,.12); color: var(--amber); border: 1px solid rgba(232,182,76,.3); }
+  .regen-btn { margin-left: auto; font-size: 11.5px; color: var(--text-dim); background: transparent; border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 6px; cursor: pointer; }
+  .regen-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .summary-content { font-size: 13.5px; line-height: 1.7; outline: none; }
+  .skeleton { height: 14px; background: linear-gradient(90deg, var(--border) 25%, #333a4d 37%, var(--border) 63%);
+    background-size: 400% 100%; border-radius: 4px; animation: shimmer 1.4s infinite; margin-bottom: 8px; }
+  @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+  .no-summary-note { padding: 14px 16px; border-radius: var(--radius); border: 1px dashed var(--border);
+    color: var(--text-faint); font-size: 13px; margin-bottom: 14px; }
+
+  .toggle-row { font-size: 12.5px; color: var(--accent); cursor: pointer; display: inline-block; margin-bottom: 10px; }
+  .raw-block { display: none; }
+  .raw-block.show { display: block; }
+
+  .transcript-turn { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .transcript-turn:last-child { border-bottom: none; }
+  .transcript-turn .t-time { font-size: 11px; color: var(--text-faint); width: 44px; flex-shrink: 0; padding-top: 2px; }
+  .transcript-turn .t-body .who { font-weight: 600; font-size: 12.5px; margin-bottom: 2px; }
+  .transcript-turn .t-body .msg { font-size: 13px; line-height: 1.55; color: var(--text-dim); }
+
+  .slack-bubble { padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .slack-bubble:last-child { border-bottom: none; }
+  .slack-bubble .who { font-weight: 600; font-size: 12.5px; margin-bottom: 2px; }
+  .slack-bubble .who .time { font-weight: 400; color: var(--text-faint); font-size: 11px; margin-left: 6px; }
+  .slack-bubble .msg { font-size: 13px; line-height: 1.55; color: var(--text-dim); }
+
+  .pending-note { padding: 14px 16px; border-radius: var(--radius); background: var(--accent-dim); color: var(--accent);
+    font-size: 13px; margin-bottom: 14px; }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Digest · TPM Task Triage</h1>
+  <div class="sync-note" id="syncNote">마지막 Outlook 동기화: 5분 전</div>
+</header>
+
+<main>
+  <div class="list-panel">
+    <div class="date-nav">
+      <button id="prevDay">◀</button>
+      <div class="date-label">
+        <span id="dateText">8/12</span>
+        <span class="weekday" id="weekdayText">수요일</span>
+        <span class="today-tag" id="todayTag" style="display:none;">오늘</span>
+      </div>
+      <button id="nextDay">▶</button>
+    </div>
+    <div class="list-scroll" id="listScroll"></div>
+  </div>
+
+  <div class="detail-panel" id="detailPanel"></div>
+</main>
+
+<script>
+// ---------------- Mock data ----------------
+const DAYS = [
+  {
+    date: "2026-08-10", weekday: "월요일",
+    meetings: [
+      {
+        id: "m1", title: "스프린트 플래닝", scheduledStart: "10:00", scheduledEnd: "10:45",
+        organizer: "김도현", attendees: ["김도현","이은지","박서연"], match: "matched", hasRecording: true,
+        outlookUrl: "outlook://event/1",
+        summary: { ai: true, edited: false,
+          html: "이번 스프린트 목표를 API 게이트웨이 인증과 리포트 자동 배포로 정했습니다. 결제 모듈 리팩토링은 QA 환경 세팅이 끝난 뒤 착수하기로 합의했습니다." },
+        transcript: [
+          { time: "00:12", who: "김도현", text: "이번 스프린트는 인증 붙이는 거랑 리포트 자동 배포, 두 개를 메인으로 가져가면 좋을 것 같아요." },
+          { time: "02:40", who: "이은지", text: "리포트 쪽은 제가 목요일까지는 초안 만들어볼게요." },
+          { time: "05:03", who: "박서연", text: "결제 모듈은 QA 환경 세팅이 아직 안 끝나서, 그거 먼저 봐야 할 것 같아요." },
+        ],
+      },
+      {
+        id: "m2", title: "고객 데모 준비", scheduledStart: "14:00", scheduledEnd: "14:30",
+        organizer: "박서연", attendees: ["박서연","최민준"], match: "scheduledOnly", hasRecording: false,
+        outlookUrl: "outlook://event/2",
+      },
+    ],
+    channels: [
+      { id: "c1", name: "#platform-infra", count: 18, closed: true,
+        summary: { ai: true, edited: false, html: "인증 서버 스펙 리뷰가 마무리됐고, 스키마 마이그레이션 스크립트 초안에 대한 피드백이 오갔습니다." },
+        messages: [
+          { time: "09:14", who: "김도현", text: "인증 서버 스펙 문서 리뷰 부탁드려요." },
+          { time: "10:02", who: "이은지", text: "봤어요, 토큰 만료 처리 부분만 좀 더 명확히 하면 좋을 것 같아요." },
+          { time: "16:31", who: "박서연", text: "마이그레이션 스크립트 초안 올렸습니다, 확인 부탁드려요." },
+        ] },
+      { id: "c2", name: "#tpm-sync", count: 9, closed: true,
+        summary: { ai: true, edited: true, html: "특이 이슈 없이 각자 진행 상황 공유 위주였습니다. (검토자가 온보딩 문서 관련 언급을 보강함)" },
+        messages: [
+          { time: "11:00", who: "박서연", text: "온보딩 문서 드래프트 공유했어요, 다음 주 리뷰 받을게요." },
+          { time: "11:05", who: "최민준", text: "넵 확인할게요." },
+        ] },
+    ],
+  },
+  {
+    date: "2026-08-11", weekday: "화요일",
+    meetings: [
+      {
+        id: "m3", title: "1:1 이은지", scheduledStart: "11:00", scheduledEnd: "11:30",
+        organizer: null, attendees: ["김도현","이은지"], match: "recordingOnly", hasRecording: true,
+        summary: { ai: true, edited: false,
+          html: "리포트 자동 배포 진행 상황과, 다음 분기 롤 관련 논의를 나눴습니다. 별도 블로커는 없었습니다." },
+        transcript: [
+          { time: "01:20", who: "이은지", text: "리포트 배포는 목요일쯤 될 것 같아요." },
+          { time: "08:44", who: "김도현", text: "좋아요, 그리고 다음 분기에 좀 더 인프라 쪽 맡아보는 거 어때요?" },
+        ],
+      },
+      {
+        id: "m4", title: "결제 모듈 리팩토링 리뷰", scheduledStart: "15:00", scheduledEnd: "15:30",
+        organizer: "최민준", attendees: ["최민준","이은지"], match: "matched", hasRecording: true,
+        outlookUrl: "outlook://event/4",
+        summary: { ai: true, edited: false,
+          html: "QA 환경 세팅이 8/19로 예상되며, 결제 모듈 리팩토링 마감(8/16)과 일정이 충돌할 수 있다는 우려가 나왔습니다." },
+        transcript: [
+          { time: "00:30", who: "최민준", text: "QA 환경은 아무래도 8/19쯤 끝날 것 같아요." },
+          { time: "03:12", who: "이은지", text: "그럼 리팩토링 마감이랑 겹치는데, 일정 조정이 필요할 것 같아요." },
+        ],
+      },
+    ],
+    channels: [
+      { id: "c3", name: "#backend", count: 51, closed: true,
+        summary: { ai: true, edited: false, html: "API 게이트웨이 인증 진행 상황 공유와, 마이그레이션 스크립트 관련 디버깅 논의가 대부분이었습니다." },
+        messages: [
+          { time: "09:40", who: "김도현", text: "마이그레이션 스크립트 돌리다가 에러 나는데 같이 봐주실 분?" },
+          { time: "09:52", who: "박서연", text: "제가 볼게요, 어떤 에러예요?" },
+          { time: "13:10", who: "김도현", text: "해결했어요, 컬럼 타입 문제였네요." },
+        ] },
+      { id: "c4", name: "#general", count: 24, closed: true,
+        summary: { ai: true, edited: false, html: "다음 주 팀 회식 일정 조율과, 신규 입사자 온보딩 관련 공지가 있었습니다." },
+        messages: [
+          { time: "10:05", who: "박서연", text: "다음 주 금요일 회식 어때요?" },
+          { time: "10:20", who: "최민준", text: "좋아요!" },
+        ] },
+      { id: "c5", name: "#random", count: 3, closed: true,
+        summary: { ai: true, edited: false, html: "점심 메뉴 관련 잡담이었습니다." },
+        messages: [
+          { time: "12:01", who: "김도현", text: "점심 뭐 먹지" },
+        ] },
+    ],
+  },
+  {
+    date: "2026-08-12", weekday: "수요일", isToday: true,
+    meetings: [
+      {
+        id: "m5", title: "위클리 싱크", scheduledStart: "10:00", scheduledEnd: "10:30",
+        organizer: "김도현", attendees: ["김도현","이은지","박서연","최민준"], match: "matched", hasRecording: true,
+        outlookUrl: "outlook://event/5",
+        summary: { ai: true, edited: false,
+          html: "이번 주는 인증/마이그레이션 트랙이 순조롭고, 결제 모듈 쪽 QA 환경 세팅 지연이 리스크로 다시 언급됐습니다." },
+        transcript: [
+          { time: "00:18", who: "김도현", text: "인증 쪽은 이번 주 안에 마무리될 것 같아요." },
+          { time: "04:55", who: "최민준", text: "QA 환경은 아직도 좀 걸릴 것 같아서, 리팩토링 일정 조정 얘기가 필요할 듯해요." },
+        ],
+      },
+      {
+        id: "m6", title: "고객 미팅", scheduledStart: "14:00", scheduledEnd: "15:00",
+        organizer: "박서연", attendees: ["박서연"], match: "scheduledOnly", hasRecording: false,
+        outlookUrl: "outlook://event/6",
+      },
+    ],
+    channels: [
+      { id: "c6", name: "#backend", count: 12, closed: false },
+      { id: "c7", name: "#tpm-sync", count: 5, closed: false },
+    ],
+  },
+];
+
+let dayIndex = DAYS.length - 1;
+let selected = { type: "meeting", id: DAYS[dayIndex].meetings[0].id };
+const editState = {}; // per-item edited overrides: key = `${type}:${id}` -> html
+
+const listScroll = document.getElementById("listScroll");
+const detailPanel = document.getElementById("detailPanel");
+
+function currentDay() { return DAYS[dayIndex]; }
+function findItem() {
+  const d = currentDay();
+  if (selected.type === "meeting") return d.meetings.find(m => m.id === selected.id);
+  return d.channels.find(c => c.id === selected.id);
+}
+function stateKey() { return `${selected.type}:${selected.id}`; }
+
+function matchLabel(m) {
+  if (m.match === "matched") return m.hasRecording ? { cls: "done", text: "요약 완료" } : { cls: "pending", text: "일정만 있음" };
+  if (m.match === "scheduledOnly") return { cls: "norecording", text: "녹음 없음" };
+  if (m.match === "recordingOnly") return { cls: "unmatched", text: "캘린더에 없는 미팅" };
+}
+
+function renderDateNav() {
+  const d = currentDay();
+  document.getElementById("dateText").textContent = d.date.slice(5).replace("-", "/");
+  document.getElementById("weekdayText").textContent = d.weekday;
+  document.getElementById("todayTag").style.display = d.isToday ? "inline-block" : "none";
+  document.getElementById("prevDay").disabled = dayIndex === 0;
+  document.getElementById("nextDay").disabled = dayIndex === DAYS.length - 1;
+}
+
+function renderList() {
+  const d = currentDay();
+  let html = `<div class="section-label">미팅 (${d.meetings.length})</div>`;
+  if (!d.meetings.length) html += `<div class="empty-section">이 날짜에 미팅이 없습니다</div>`;
+  d.meetings.forEach(m => {
+    const pill = matchLabel(m);
+    const sel = selected.type === "meeting" && selected.id === m.id;
+    html += `
+      <div class="item-card ${sel ? "selected" : ""}" data-type="meeting" data-id="${m.id}">
+        <div class="item-body">
+          <div class="item-top">
+            <span>${m.scheduledStart}–${m.scheduledEnd}</span>
+            <span class="status-pill ${pill.cls}">${pill.text}</span>
+          </div>
+          <div class="item-title">${m.title}</div>
+          <div class="item-sub">${m.attendees.join(", ")}</div>
+        </div>
+      </div>`;
+  });
+
+  html += `<div class="section-label">Slack 채널 (${d.channels.length})</div>`;
+  if (!d.channels.length) html += `<div class="empty-section">이 날짜에 활동이 있었던 채널이 없습니다</div>`;
+  d.channels.forEach(c => {
+    const sel = selected.type === "channel" && selected.id === c.id;
+    const pill = c.closed ? { cls: "done", text: "요약 완료" } : { cls: "pending", text: "집계 중" };
+    html += `
+      <div class="item-card ${sel ? "selected" : ""}" data-type="channel" data-id="${c.id}">
+        <div class="item-body">
+          <div class="item-top">
+            <span>${c.count}건${c.closed ? "" : " (잠정)"}</span>
+            <span class="status-pill ${pill.cls}">${pill.text}</span>
+          </div>
+          <div class="item-title">${c.name}</div>
+        </div>
+      </div>`;
+  });
+
+  listScroll.innerHTML = html;
+  listScroll.querySelectorAll(".item-card").forEach(el => {
+    el.addEventListener("click", () => {
+      selected = { type: el.dataset.type, id: el.dataset.id };
+      renderAll();
+    });
+  });
+}
+
+function summaryCardHtml(item) {
+  const key = stateKey();
+  const override = editState[key];
+  const edited = override ? override.edited : item.summary.edited;
+  const html = override ? override.html : item.summary.html;
+  return `
+    <div class="summary-card">
+      <div class="summary-card-head">
+        <h3>AI 요약</h3>
+        ${edited ? `<span class="edited-badge">편집됨</span>` : `<span class="ai-badge">AI 생성</span>`}
+        <button class="regen-btn" id="regenBtn">↻ 다시 생성</button>
+      </div>
+      <div class="summary-content" contenteditable="true" id="summaryContent">${html}</div>
+    </div>`;
+}
+
+function renderMeetingDetail(m) {
+  const pill = matchLabel(m);
+  let matchBannerHtml = "";
+  let matchPickerHtml = "";
+  if (m.match === "recordingOnly") {
+    matchBannerHtml = `
+      <div class="match-banner">⚠ Outlook 캘린더에서 대응하는 일정을 찾지 못했습니다
+        <button id="linkBtn">Outlook 일정과 연결</button>
+      </div>`;
+    matchPickerHtml = `
+      <div class="match-picker" id="matchPicker">
+        <div class="opt" data-title="1:1 이은지 (11:00 예약됨)">1:1 이은지 · 11:00 예약됨<span>연결</span></div>
+        <div class="opt" data-title="팀 스탠드업 (09:30)">팀 스탠드업 · 09:30<span>연결</span></div>
+      </div>`;
+  } else if (m.match === "matched") {
+    matchBannerHtml = `
+      <div class="match-banner" style="background:rgba(108,141,255,.08); border-color:rgba(108,141,255,.3); color:var(--accent);">
+        ✓ Outlook 일정과 연결됨
+        <button id="unlinkBtn" style="border-color:var(--accent); color:var(--accent);">연결 해제</button>
+      </div>`;
+  }
+
+  let bodyHtml = "";
+  if (m.hasRecording) {
+    bodyHtml = `
+      ${summaryCardHtml(m)}
+      <span class="toggle-row" id="rawToggle">STT 원문 펼쳐보기 ▾</span>
+      <div class="raw-block" id="rawBlock">
+        ${m.transcript.map(t => `
+          <div class="transcript-turn">
+            <div class="t-time">${t.time}</div>
+            <div class="t-body"><div class="who">${t.who}</div><div class="msg">${t.text}</div></div>
+          </div>`).join("")}
+      </div>`;
+  } else {
+    bodyHtml = `<div class="no-summary-note">이 미팅은 녹음/STT가 없어 요약을 생성할 수 없습니다.</div>`;
+  }
+
+  detailPanel.innerHTML = `
+    <div class="detail-head">
+      <div class="detail-title">${m.title}</div>
+      <div class="detail-meta">
+        <span>🕐 ${m.scheduledStart}–${m.scheduledEnd}</span>
+        <span>👤 ${m.attendees.join(", ")}</span>
+        ${m.organizer ? `<span>주최: ${m.organizer}</span>` : ""}
+        <span class="status-pill ${pill.cls}">${pill.text}</span>
+      </div>
+    </div>
+    ${matchBannerHtml}
+    ${matchPickerHtml}
+    <div class="body-scroll">${bodyHtml}</div>`;
+
+  const linkBtn = document.getElementById("linkBtn");
+  if (linkBtn) linkBtn.addEventListener("click", () => document.getElementById("matchPicker").classList.toggle("show"));
+  const picker = document.getElementById("matchPicker");
+  if (picker) picker.querySelectorAll(".opt").forEach(opt => {
+    opt.addEventListener("click", () => {
+      m.match = "matched";
+      m.outlookUrl = "outlook://event/manual";
+      renderAll();
+    });
+  });
+  const unlinkBtn = document.getElementById("unlinkBtn");
+  if (unlinkBtn) unlinkBtn.addEventListener("click", () => { m.match = "recordingOnly"; renderAll(); });
+
+  wireSummaryCard(m);
+
+  const rawToggle = document.getElementById("rawToggle");
+  if (rawToggle) rawToggle.addEventListener("click", () => {
+    const block = document.getElementById("rawBlock");
+    const showing = block.classList.toggle("show");
+    rawToggle.textContent = showing ? "STT 원문 접기 ▴" : "STT 원문 펼쳐보기 ▾";
+  });
+}
+
+function renderChannelDetail(c) {
+  if (!c.closed) {
+    detailPanel.innerHTML = `
+      <div class="detail-head">
+        <div class="detail-title">${c.name}</div>
+        <div class="detail-meta"><span>${c.count}건 (잠정)</span></div>
+      </div>
+      <div class="body-scroll">
+        <div class="pending-note">아직 집계 중 — 새벽 5시 이후 요약이 생성됩니다.</div>
+      </div>`;
+    return;
+  }
+  detailPanel.innerHTML = `
+    <div class="detail-head">
+      <div class="detail-title">${c.name}</div>
+      <div class="detail-meta"><span>🕐 05:00 ~ 익일 05:00</span><span>${c.count}건</span></div>
+    </div>
+    <div class="body-scroll">
+      ${summaryCardHtml(c)}
+      <span class="toggle-row" id="rawToggle">원본 메시지 펼쳐보기 ▾</span>
+      <div class="raw-block" id="rawBlock">
+        ${c.messages.map(msg => `
+          <div class="slack-bubble">
+            <div class="who">${msg.who}<span class="time">${msg.time}</span></div>
+            <div class="msg">${msg.text}</div>
+          </div>`).join("")}
+      </div>
+    </div>`;
+
+  wireSummaryCard(c);
+  const rawToggle = document.getElementById("rawToggle");
+  if (rawToggle) rawToggle.addEventListener("click", () => {
+    const block = document.getElementById("rawBlock");
+    const showing = block.classList.toggle("show");
+    rawToggle.textContent = showing ? "원본 메시지 접기 ▴" : "원본 메시지 펼쳐보기 ▾";
+  });
+}
+
+function wireSummaryCard(item) {
+  const key = stateKey();
+  const content = document.getElementById("summaryContent");
+  if (content) {
+    content.addEventListener("input", () => {
+      editState[key] = { html: content.innerHTML, edited: true };
+      const head = content.closest(".summary-card").querySelector(".summary-card-head");
+      const badge = head.querySelector(".ai-badge, .edited-badge");
+      if (badge && badge.classList.contains("ai-badge")) {
+        badge.className = "edited-badge"; badge.textContent = "편집됨";
+      }
+    });
+  }
+  const regenBtn = document.getElementById("regenBtn");
+  if (regenBtn) regenBtn.addEventListener("click", () => {
+    const card = regenBtn.closest(".summary-card");
+    const contentEl = card.querySelector(".summary-content");
+    contentEl.contentEditable = "false";
+    contentEl.innerHTML = `<div class="skeleton" style="width:92%"></div><div class="skeleton" style="width:68%"></div>`;
+    setTimeout(() => {
+      delete editState[key];
+      item.summary.html = `<i>(재생성됨)</i> ${item.summary.html.replace(/^<i>\(재생성됨\)<\/i>\s*/, "")}`;
+      item.summary.edited = false;
+      renderDetail();
+    }, 900);
+  });
+}
+
+function renderDetail() {
+  const item = findItem();
+  if (!item) { detailPanel.innerHTML = `<div class="empty-state">항목을 선택하세요</div>`; return; }
+  if (selected.type === "meeting") renderMeetingDetail(item); else renderChannelDetail(item);
+}
+
+function renderAll() {
+  renderDateNav();
+  renderList();
+  renderDetail();
+}
+
+document.getElementById("prevDay").addEventListener("click", () => {
+  if (dayIndex > 0) {
+    dayIndex--;
+    const d = currentDay();
+    selected = d.meetings.length ? { type: "meeting", id: d.meetings[0].id }
+      : d.channels.length ? { type: "channel", id: d.channels[0].id } : { type: "meeting", id: null };
+    renderAll();
+  }
+});
+document.getElementById("nextDay").addEventListener("click", () => {
+  if (dayIndex < DAYS.length - 1) {
+    dayIndex++;
+    const d = currentDay();
+    selected = d.meetings.length ? { type: "meeting", id: d.meetings[0].id }
+      : d.channels.length ? { type: "channel", id: d.channels[0].id } : { type: "meeting", id: null };
+    renderAll();
+  }
+});
+
+renderAll();
+</script>
+</body>
+</html>

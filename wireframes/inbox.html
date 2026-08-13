@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>Inbox — TPM Task Triage (Wireframe)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161923;
+    --panel-2: #1c202c;
+    --border: #2a2f3d;
+    --text: #e8eaf0;
+    --text-dim: #9298a8;
+    --text-faint: #656c7d;
+    --accent: #6c8dff;
+    --accent-dim: #2c3350;
+    --green: #3ecf8e;
+    --amber: #e8b64c;
+    --red: #f0665e;
+    --radius: 10px;
+    font-size: 15px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", "Pretendard", "Malgun Gothic", sans-serif;
+  }
+  body { display: flex; flex-direction: column; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 20px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  header h1 { font-size: 15px; font-weight: 600; margin: 0; }
+  header .counter { font-size: 13px; color: var(--text-dim); }
+
+  main {
+    flex: 1; display: flex; min-height: 0;
+  }
+
+  /* ---------- 좌측 리스트 ---------- */
+  .list-panel {
+    width: 300px; flex-shrink: 0; border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .filter-bar {
+    display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .filter-chip {
+    font-size: 12px; padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--text-dim); cursor: pointer;
+    background: transparent; white-space: nowrap;
+  }
+  .filter-chip.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+
+  .card-list { flex: 1; overflow-y: auto; }
+  .card {
+    display: flex; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border);
+    cursor: pointer; position: relative; transition: background .15s, opacity .3s, transform .3s;
+  }
+  .card:hover { background: var(--panel-2); }
+  .card.selected { background: var(--panel-2); box-shadow: inset 3px 0 0 var(--accent); }
+  .card.done { opacity: 0; transform: translateX(12px); pointer-events: none; }
+
+  .dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .dot.high { background: var(--green); }
+  .dot.mid { background: var(--amber); }
+  .dot.low { background: var(--red); }
+
+  .card-body { min-width: 0; flex: 1; }
+  .card-top { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-faint); margin-bottom: 3px; }
+  .src-badge { padding: 1px 6px; border-radius: 4px; background: var(--panel-2); border: 1px solid var(--border); }
+  .card-title { font-size: 13.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-assignee { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .card-snippet { font-size: 12px; color: var(--text-faint); margin-top: 4px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* ---------- 우측 상세 ---------- */
+  .detail-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow-y: auto; }
+  .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-dim); gap: 8px; }
+  .empty-state .emoji { font-size: 40px; }
+
+  .source-viewer { padding: 18px 24px; border-bottom: 1px solid var(--border); }
+  .source-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+  .badge { padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--panel-2); }
+
+  .slack-bubble { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+  .slack-bubble .who { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .slack-bubble .msg { font-size: 13.5px; line-height: 1.5; }
+  .context-toggle { font-size: 12px; color: var(--accent); cursor: pointer; margin-top: 8px; display: inline-block; }
+
+  .waveform { display: flex; align-items: center; gap: 12px; }
+  .play-btn {
+    width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--accent);
+    color: #fff; cursor: pointer; font-size: 14px; flex-shrink: 0;
+  }
+  .wave-bars { flex: 1; display: flex; align-items: center; gap: 2px; height: 34px; position: relative; }
+  .wave-bars span { width: 2px; background: var(--border); border-radius: 2px; }
+  .wave-bars span.played { background: var(--accent); }
+  .wave-marker { position: absolute; top: -4px; width: 2px; height: 42px; background: var(--red); }
+  .wave-time { font-size: 11px; color: var(--text-faint); width: 60px; text-align: right; flex-shrink: 0; }
+  .speaker-tag { font-size: 11px; color: var(--text-faint); margin-top: 8px; }
+
+  .warn-banner {
+    margin: 14px 24px 0; padding: 8px 12px; border-radius: 8px;
+    background: rgba(232,182,76,.1); border: 1px solid rgba(232,182,76,.35);
+    color: var(--amber); font-size: 12.5px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .edit-form { padding: 18px 24px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field-label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .dirty-badge { font-size: 10px; padding: 1px 6px; border-radius: 999px; background: var(--accent-dim); color: var(--accent); text-transform: none; letter-spacing: 0; font-weight: 500; }
+  .field input[type=text], .field input[type=date] {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 10px; border-radius: 8px; font-size: 13.5px; font-family: inherit;
+  }
+  .field input:focus { outline: none; border-color: var(--accent); }
+  .dep-row { display: flex; gap: 8px; }
+  .dep-row select { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 8px; font-size: 13px; }
+  .dep-row input { flex: 1; }
+  .unresolved-chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: rgba(240,102,94,.12); color: var(--red); border: 1px solid rgba(240,102,94,.3); align-self: flex-start; margin-top: 4px; }
+
+  .confidence-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; width: fit-content; padding: 5px 10px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--border); }
+
+  .action-bar {
+    display: flex; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--border);
+    position: sticky; bottom: 0; background: var(--bg);
+  }
+  button.act { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer; border: 1px solid transparent; }
+  .act-approve { background: var(--green); color: #04231a; }
+  .act-approve:hover { filter: brightness(1.08); }
+  .act-reject { background: transparent; color: var(--red); border-color: rgba(240,102,94,.4); }
+  .act-reject:hover { background: rgba(240,102,94,.08); }
+  .kbd-hint { font-size: 10px; opacity: .7; margin-left: 6px; }
+
+  /* modal */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 10; }
+  .modal-backdrop.show { display: flex; }
+  .modal { width: 380px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+  .modal h3 { margin: 0 0 12px; font-size: 14px; }
+  .preset-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .preset-chip { font-size: 12px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border); cursor: pointer; color: var(--text-dim); }
+  .preset-chip.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+  .modal textarea {
+    width: 100%; min-height: 70px; background: var(--panel-2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 8px 10px; font-family: inherit; font-size: 13px; resize: vertical;
+  }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+  .modal-actions button { padding: 7px 14px; border-radius: 7px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); }
+  .modal-actions button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .modal-actions button.primary:disabled { opacity: .4; cursor: not-allowed; }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Inbox · TPM Task Triage</h1>
+  <div class="counter" id="counter">— pending</div>
+</header>
+
+<main>
+  <div class="list-panel">
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-chip active" data-filter="all">전체</button>
+      <button class="filter-chip" data-filter="low">confidence 낮음 우선</button>
+      <button class="filter-chip" data-filter="slack">Slack</button>
+      <button class="filter-chip" data-filter="audio">오디오</button>
+    </div>
+    <div class="card-list" id="cardList"></div>
+  </div>
+
+  <div class="detail-panel" id="detailPanel"></div>
+</main>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h3 id="modalTitle">반려 사유</h3>
+    <div class="preset-list" id="presetList"></div>
+    <textarea id="reasonText" placeholder="구체적인 사유를 입력하세요 (선택 사항, 프리셋 보완)"></textarea>
+    <div class="modal-actions">
+      <button id="modalCancel">취소 (Esc)</button>
+      <button class="primary" id="modalConfirm" disabled>확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------------- Mock data (extracted_candidates 스키마 반영) ----------------
+let candidates = [
+  {
+    id: "c1", source: "slack", channel: "#platform-infra", speaker: "김도현",
+    snippet: "이거 API 게이트웨이 인증 붙이는 거, 제가 이번 주까지 끝내볼게요. 근데 스키마 마이그레이션 먼저 끝나야 붙일 수 있을 것 같은데.",
+    context_before: "박서연: 결제 서비스 쪽 API 게이트웨이 인증 아직 안 붙었죠?",
+    context_after: "박서연: 좋아요, 그럼 마이그레이션 완료되면 바로 이어서 진행해주세요.",
+    occurred_at: "2시간 전",
+    suggested_task: "API 게이트웨이에 인증 붙이기",
+    suggested_assignee: "김도현",
+    suggested_due: "2026-08-15",
+    suggested_dependency: { type: "blocked_by", target_text: "스키마 마이그레이션", target_task_id: null },
+    confidence_score: 0.62,
+    similar_existing_task: null,
+  },
+  {
+    id: "c2", source: "wav", speaker: "이은지", timestamp_sec: 142,
+    snippet: "리포트 배포는... 음 확인해볼게요, 아마 목요일쯤엔 될 것 같긴 한데 확답은 못 드려요.",
+    context_before: "최민준: 리포트 자동 배포 언제쯤 가능할까요?",
+    context_after: "최민준: 넵 알겠습니다, 목요일 기준으로 일정 잡아둘게요.",
+    occurred_at: "어제",
+    suggested_task: "리포트 자동 배포 설정",
+    suggested_assignee: "이은지",
+    suggested_due: "2026-08-14",
+    suggested_dependency: null,
+    confidence_score: 0.41,
+    similar_existing_task: null,
+  },
+  {
+    id: "c3", source: "slack", channel: "#tpm-sync", speaker: "박서연",
+    snippet: "온보딩 문서 초안 오늘까지 드래프트만 공유할게요. 리뷰는 다음 주에 받는 걸로.",
+    context_before: "김도현: 신규 입사자 온보딩 문서 진행 상황 어때요?",
+    context_after: "김도현: 넵 좋습니다, 공유해주시면 바로 볼게요.",
+    occurred_at: "3시간 전",
+    suggested_task: "신규 입사자 온보딩 문서 초안 작성",
+    suggested_assignee: "박서연",
+    suggested_due: "2026-08-11",
+    suggested_dependency: null,
+    confidence_score: 0.91,
+    similar_existing_task: { title: "온보딩 문서 v2 업데이트" },
+  },
+  {
+    id: "c4", source: "mp3", speaker: "최민준", timestamp_sec: 58,
+    snippet: "결제 모듈 리팩토링은 QA 환경 세팅 끝나야 시작할 수 있어요, 그거부터 막혀있어서.",
+    context_before: "이은지: 결제 모듈 리팩토링 언제 시작 가능해요?",
+    context_after: "이은지: 아 QA 환경이 아직이구나, 그럼 그거 먼저 확인해볼게요.",
+    occurred_at: "5시간 전",
+    suggested_task: "결제 모듈 리팩토링",
+    suggested_assignee: "최민준",
+    suggested_due: null,
+    suggested_dependency: { type: "blocked_by", target_text: "QA 환경 세팅", target_task_id: "t-88" },
+    confidence_score: 0.77,
+    similar_existing_task: null,
+  },
+  {
+    id: "c5", source: "slack", channel: "#random", speaker: "김도현",
+    snippet: "점심 뭐 먹을지 진짜 고민되네요 ㅋㅋ 다들 뭐 드실?",
+    context_before: "박서연: 배고프다...",
+    context_after: "최민준: 저는 국밥이요",
+    occurred_at: "6시간 전",
+    suggested_task: "점심 메뉴 정하기",
+    suggested_assignee: null,
+    suggested_due: null,
+    suggested_dependency: null,
+    confidence_score: 0.18,
+    similar_existing_task: null,
+  },
+];
+
+const REJECT_PRESETS = ["중복", "태스크 아님(잡담)", "오인식(STT/LLM 오류)", "관련 없음", "기타"];
+const MODIFY_PRESETS = ["담당자 재배정", "기한 정정", "의존관계 추가/수정", "제목 명확화", "기타"];
+
+let selectedId = candidates.length ? candidates[0].id : null;
+let editState = {}; // per-candidate edited field overrides
+let reviewLog = []; // mock human_review_log entries
+let pendingAction = null; // 'reject' | 'modify' context for modal
+let selectedPreset = null;
+
+const cardList = document.getElementById("cardList");
+const detailPanel = document.getElementById("detailPanel");
+const counter = document.getElementById("counter");
+const modalBackdrop = document.getElementById("modalBackdrop");
+const modalTitle = document.getElementById("modalTitle");
+const presetList = document.getElementById("presetList");
+const reasonText = document.getElementById("reasonText");
+const modalConfirm = document.getElementById("modalConfirm");
+const modalCancel = document.getElementById("modalCancel");
+
+let activeFilter = "all";
+
+function confBand(score) {
+  if (score >= 0.8) return "high";
+  if (score >= 0.5) return "mid";
+  return "low";
+}
+function srcLabel(s) { return { slack: "Slack", wav: "WAV", mp3: "MP3" }[s]; }
+
+function visibleCandidates() {
+  let list = candidates;
+  if (activeFilter === "low") list = [...list].sort((a,b) => a.confidence_score - b.confidence_score);
+  if (activeFilter === "slack") list = list.filter(c => c.source === "slack");
+  if (activeFilter === "audio") list = list.filter(c => c.source !== "slack");
+  return list;
+}
+
+function fieldValue(c, key) {
+  return (editState[c.id] && editState[c.id][key] !== undefined) ? editState[c.id][key] : c[key];
+}
+function isDirty(c, key) {
+  return editState[c.id] && editState[c.id][key] !== undefined && editState[c.id][key] !== c[key];
+}
+function renderList() {
+  const list = visibleCandidates();
+  counter.textContent = `${candidates.length} pending`;
+  cardList.innerHTML = "";
+  list.forEach(c => {
+    const el = document.createElement("div");
+    el.className = "card" + (c.id === selectedId ? " selected" : "");
+    el.dataset.id = c.id;
+    el.innerHTML = `
+      <div class="dot ${confBand(c.confidence_score)}" title="confidence ${c.confidence_score}"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="src-badge">${srcLabel(c.source)}</span>
+          <span>${c.occurred_at}</span>
+        </div>
+        <div class="card-title">${fieldValue(c, "suggested_task")}</div>
+        <div class="card-assignee">${fieldValue(c, "suggested_assignee") || "담당자 미정"}</div>
+        <div class="card-snippet">${c.snippet}</div>
+      </div>`;
+    el.addEventListener("click", () => { selectedId = c.id; renderAll(); });
+    cardList.appendChild(el);
+  });
+}
+
+function renderDetail() {
+  const c = candidates.find(x => x.id === selectedId);
+  if (!c) {
+    detailPanel.innerHTML = `<div class="empty-state"><div class="emoji">🎉</div><div>Inbox Zero — 검토할 후보가 없습니다</div></div>`;
+    return;
+  }
+
+  const dep = fieldValue(c, "suggested_dependency");
+  const dirty = editState[c.id] || {};
+  const hasDirty = Object.keys(dirty).length > 0;
+
+  let sourceHtml = "";
+  if (c.source === "slack") {
+    sourceHtml = `
+      <div class="source-meta"><span class="badge">Slack</span><span>${c.channel}</span><span>· ${c.occurred_at}</span></div>
+      <div class="slack-bubble">
+        <div class="who">${c.speaker}</div>
+        <div class="msg">${c.snippet}</div>
+      </div>
+      <span class="context-toggle" onclick="toggleContext(this)">앞뒤 문맥 더보기 ▾</span>
+      <div class="ctx-block" style="display:none; margin-top:8px; font-size:12.5px; color:var(--text-faint); line-height:1.6;">
+        <div>▲ ${c.context_before}</div>
+        <div style="color:var(--text)">${c.speaker}: ${c.snippet}</div>
+        <div>▼ ${c.context_after}</div>
+      </div>`;
+  } else {
+    const bars = Array.from({length: 48}, () => 6 + Math.round(Math.random()*22));
+    sourceHtml = `
+      <div class="source-meta"><span class="badge">${srcLabel(c.source)}</span><span>화자: ${c.speaker}</span><span>· ${c.occurred_at}</span></div>
+      <div class="waveform">
+        <button class="play-btn">▶</button>
+        <div class="wave-bars">
+          ${bars.map((h,i) => `<span style="height:${h}px" class="${i < 18 ? 'played' : ''}"></span>`).join("")}
+        </div>
+        <div class="wave-time">${Math.floor(c.timestamp_sec/60)}:${String(c.timestamp_sec%60).padStart(2,'0')}</div>
+      </div>
+      <div class="speaker-tag">타임스탬프 ${c.timestamp_sec}s 지점에서 발화 인식됨</div>
+      <span class="context-toggle" onclick="toggleContext(this)">앞뒤 문맥 더보기 ▾</span>
+      <div class="ctx-block" style="display:none; margin-top:8px; font-size:12.5px; color:var(--text-faint); line-height:1.6;">
+        <div>▲ ${c.context_before}</div>
+        <div style="color:var(--text)">${c.speaker}: ${c.snippet}</div>
+        <div>▼ ${c.context_after}</div>
+      </div>`;
+  }
+
+  const warnHtml = c.similar_existing_task
+    ? `<div class="warn-banner">⚠ 유사 태스크 발견: "${c.similar_existing_task.title}" — 중복 가능성이 있습니다. 검토 후 병합을 고려하세요.</div>`
+    : "";
+
+  const depHtml = dep ? `
+    <div class="dep-row">
+      <select onchange="editField('${c.id}','dep_type', this.value)">
+        <option value="blocked_by" ${dep.type==='blocked_by'?'selected':''}>blocked_by (선행 필요)</option>
+        <option value="blocks" ${dep.type==='blocks'?'selected':''}>blocks (후속 차단)</option>
+      </select>
+      <input type="text" value="${dep.target_text}" onchange="editField('${c.id}','dep_text', this.value)" />
+    </div>
+    ${!dep.target_task_id ? `<span class="unresolved-chip">미확정 참조 · 기존 태스크와 자동 매칭되지 않음</span>` : `<span class="unresolved-chip" style="color:var(--green);background:rgba(62,207,142,.12);border-color:rgba(62,207,142,.3);">기존 태스크 #${dep.target_task_id}에 연결됨</span>`}
+  ` : `<div style="font-size:12.5px;color:var(--text-faint);">감지된 의존관계 없음</div>`;
+
+  detailPanel.innerHTML = `
+    <div class="source-viewer">${sourceHtml}</div>
+    ${warnHtml}
+    <div class="edit-form">
+      <div class="field">
+        <div class="field-label">태스크 제목 ${isDirty(c,'suggested_task') ? '<span class="dirty-badge">수정됨</span>' : ''}</div>
+        <input type="text" value="${fieldValue(c,'suggested_task')}" oninput="editFieldSilent('${c.id}','suggested_task', this.value)" onblur="renderAll(true)" />
+      </div>
+      <div class="field">
+        <div class="field-label">담당자 ${isDirty(c,'suggested_assignee') ? '<span class="dirty-badge">수정됨</span>' : ''}</div>
+        <input type="text" list="people" value="${fieldValue(c,'suggested_assignee') || ''}" placeholder="담당자 미정" oninput="editFieldSilent('${c.id}','suggested_assignee', this.value)" onblur="renderAll(true)" />
+        <datalist id="people"><option>김도현</option><option>이은지</option><option>박서연</option><option>최민준</option></datalist>
+      </div>
+      <div class="field">
+        <div class="field-label">기한 ${isDirty(c,'suggested_due') ? '<span class="dirty-badge">수정됨</span>' : ''}</div>
+        <input type="date" value="${fieldValue(c,'suggested_due') || ''}" onchange="editField('${c.id}','suggested_due', this.value)" />
+      </div>
+      <div class="field">
+        <div class="field-label">의존관계</div>
+        ${depHtml}
+      </div>
+      <div class="field">
+        <div class="field-label">Confidence</div>
+        <div class="confidence-badge"><span class="dot ${confBand(c.confidence_score)}"></span>${c.confidence_score.toFixed(2)} (${confBand(c.confidence_score) === 'high' ? '높음' : confBand(c.confidence_score) === 'mid' ? '중간' : '낮음'})</div>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="act act-approve" id="btnApprove">${hasDirty ? "수정 후 승인" : "승인"} <span class="kbd-hint">A</span></button>
+      <button class="act act-reject" id="btnReject">반려 <span class="kbd-hint">R</span></button>
+    </div>
+  `;
+
+  document.getElementById("btnApprove").addEventListener("click", () => {
+    if (hasDirty) openModal("modify", c); else finalizeAction(c, "confirmed", null);
+  });
+  document.getElementById("btnReject").addEventListener("click", () => openModal("reject", c));
+}
+
+function toggleContext(el) {
+  const block = el.nextElementSibling;
+  const showing = block.style.display !== "none";
+  block.style.display = showing ? "none" : "block";
+  el.textContent = showing ? "앞뒤 문맥 더보기 ▾" : "앞뒤 문맥 접기 ▴";
+}
+
+function editFieldSilent(id, key, value) {
+  editState[id] = editState[id] || {};
+  editState[id][key] = value;
+}
+
+function editField(id, key, value) {
+  editState[id] = editState[id] || {};
+  if (key === "dep_type" || key === "dep_text") {
+    const c = candidates.find(x => x.id === id);
+    const base = editState[id].suggested_dependency || { ...c.suggested_dependency };
+    if (key === "dep_type") base.type = value; else base.target_text = value;
+    editState[id].suggested_dependency = base;
+  } else {
+    editState[id][key] = value;
+  }
+  renderAll(true);
+}
+
+function openModal(kind, c) {
+  pendingAction = { kind, candidate: c };
+  selectedPreset = null;
+  reasonText.value = "";
+  modalTitle.textContent = kind === "reject" ? "반려 사유" : "수정 사유";
+  const presets = kind === "reject" ? REJECT_PRESETS : MODIFY_PRESETS;
+  presetList.innerHTML = presets.map(p => `<span class="preset-chip" data-p="${p}">${p}</span>`).join("");
+  presetList.querySelectorAll(".preset-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      presetList.querySelectorAll(".preset-chip").forEach(x => x.classList.remove("active"));
+      chip.classList.add("active");
+      selectedPreset = chip.dataset.p;
+      modalConfirm.disabled = false;
+    });
+  });
+  modalConfirm.disabled = true;
+  modalBackdrop.classList.add("show");
+}
+function closeModal() { modalBackdrop.classList.remove("show"); pendingAction = null; }
+
+modalCancel.addEventListener("click", closeModal);
+modalBackdrop.addEventListener("click", (e) => { if (e.target === modalBackdrop) closeModal(); });
+modalConfirm.addEventListener("click", () => {
+  if (!pendingAction) return;
+  const reason = selectedPreset + (reasonText.value.trim() ? ` — ${reasonText.value.trim()}` : "");
+  const action = pendingAction.kind === "reject" ? "rejected" : "modified";
+  finalizeAction(pendingAction.candidate, action, reason);
+  closeModal();
+});
+
+function finalizeAction(c, action, reasoning) {
+  reviewLog.push({
+    candidate_id: c.id,
+    action,
+    original_suggestion: { task: c.suggested_task, assignee: c.suggested_assignee, due: c.suggested_due, dependency: c.suggested_dependency },
+    final_decision: editState[c.id] || null,
+    reasoning,
+  });
+  const cardEl = cardList.querySelector(`.card[data-id="${c.id}"]`);
+  if (cardEl) cardEl.classList.add("done");
+  setTimeout(() => {
+    candidates = candidates.filter(x => x.id !== c.id);
+    delete editState[c.id];
+    const remaining = visibleCandidates();
+    selectedId = remaining.length ? remaining[0].id : null;
+    renderAll();
+  }, 300);
+}
+
+function renderAll(skipListRerender) {
+  if (!skipListRerender) renderList();
+  renderDetail();
+}
+
+document.getElementById("filterBar").addEventListener("click", (e) => {
+  if (!e.target.dataset.filter) return;
+  activeFilter = e.target.dataset.filter;
+  document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+  e.target.classList.add("active");
+  renderList();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (modalBackdrop.classList.contains("show")) {
+    if (e.key === "Escape") closeModal();
+    return;
+  }
+  const list = visibleCandidates();
+  const idx = list.findIndex(c => c.id === selectedId);
+  if (e.key === "j" || e.key === "ArrowDown") {
+    if (idx < list.length - 1) { selectedId = list[idx+1].id; renderAll(); }
+  } else if (e.key === "k" || e.key === "ArrowUp") {
+    if (idx > 0) { selectedId = list[idx-1].id; renderAll(); }
+  } else if (e.key === "a" || e.key === "A") {
+    document.getElementById("btnApprove")?.click();
+  } else if (e.key === "r" || e.key === "R") {
+    document.getElementById("btnReject")?.click();
+  }
+});
+
+renderAll();
+</script>
+</body>
+</html>

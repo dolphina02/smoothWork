@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>Reports — TPM Task Triage (Wireframe)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0f1115; --panel: #161923; --panel-2: #1c202c; --border: #2a2f3d;
+    --text: #e8eaf0; --text-dim: #9298a8; --text-faint: #656c7d;
+    --accent: #6c8dff; --accent-dim: #2c3350;
+    --green: #3ecf8e; --amber: #e8b64c; --red: #f0665e;
+    --radius: 10px; font-size: 15px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: -apple-system,"Segoe UI","Pretendard","Malgun Gothic",sans-serif; }
+  body { display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px;
+    border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  header h1 { font-size: 15px; font-weight: 600; margin: 0; }
+
+  main { flex: 1; display: flex; min-height: 0; }
+
+  /* ---------- 좌측 히스토리 ---------- */
+  .history-col { width: 260px; flex-shrink: 0; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+  .new-report-btn { margin: 12px; padding: 9px; border-radius: 8px; border: 1px dashed var(--border);
+    background: transparent; color: var(--accent); font-size: 13px; cursor: pointer; }
+  .new-report-btn:hover { background: var(--accent-dim); border-style: solid; }
+  .history-list { flex: 1; overflow-y: auto; }
+  .history-item { padding: 11px 14px; border-bottom: 1px solid var(--border); cursor: pointer; position: relative; }
+  .history-item:hover { background: var(--panel-2); }
+  .history-item.selected { background: var(--panel-2); box-shadow: inset 3px 0 0 var(--accent); }
+  .history-top { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-faint); margin-bottom: 3px; }
+  .type-badge { padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--panel-2); }
+  .history-title { font-size: 13px; font-weight: 500; }
+  .status-badge { font-size: 10px; padding: 1px 7px; border-radius: 999px; margin-left: auto; }
+  .status-badge.draft { background: var(--panel-2); color: var(--text-dim); border: 1px solid var(--border); }
+  .status-badge.shared { background: rgba(62,207,142,.12); color: var(--green); border: 1px solid rgba(62,207,142,.3); }
+
+  /* ---------- 우측 에디터 ---------- */
+  .editor-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .empty-state { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-dim); }
+
+  .editor-head { padding: 16px 24px; border-bottom: 1px solid var(--border); }
+  .editor-head .top-row { display: flex; align-items: center; gap: 10px; }
+  .editor-title { font-size: 16px; font-weight: 600; }
+  .editor-meta { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+
+  .stale-banner { margin: 12px 24px 0; padding: 8px 12px; border-radius: 8px; background: rgba(232,182,76,.1);
+    border: 1px solid rgba(232,182,76,.35); color: var(--amber); font-size: 12.5px; display: flex; align-items: center; gap: 10px; }
+  .stale-banner button { margin-left: auto; font-size: 11.5px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--amber);
+    background: transparent; color: var(--amber); cursor: pointer; }
+
+  .tabs { display: flex; gap: 4px; padding: 0 24px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .tab { padding: 10px 4px; font-size: 13px; color: var(--text-faint); cursor: pointer; border-bottom: 2px solid transparent; margin-right: 18px; }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  .editor-body { flex: 1; overflow-y: auto; padding: 18px 24px; }
+
+  .section-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 14px; }
+  .section-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .section-card-head h3 { font-size: 13.5px; margin: 0; }
+  .ai-badge { font-size: 10px; padding: 1px 7px; border-radius: 999px; background: var(--accent-dim); color: var(--accent); }
+  .edited-badge { font-size: 10px; padding: 1px 7px; border-radius: 999px; background: rgba(232,182,76,.12); color: var(--amber); border: 1px solid rgba(232,182,76,.3); }
+  .regen-btn { margin-left: auto; font-size: 11.5px; color: var(--text-dim); background: transparent; border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 6px; cursor: pointer; }
+  .regen-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .section-content { font-size: 13.5px; line-height: 1.7; outline: none; }
+  .section-content ul { margin: 4px 0; padding-left: 20px; }
+  .section-content:empty::before { content: attr(data-placeholder); color: var(--text-faint); }
+  .skeleton { height: 14px; background: linear-gradient(90deg, var(--border) 25%, #333a4d 37%, var(--border) 63%);
+    background-size: 400% 100%; border-radius: 4px; animation: shimmer 1.4s infinite; margin-bottom: 8px; }
+  @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+  /* ---------- 미리보기 ---------- */
+  .preview-doc { max-width: 680px; margin: 0 auto; }
+  .preview-doc.executive h2 { font-size: 20px; }
+  .preview-doc.executive .section-content { font-size: 15px; line-height: 1.85; }
+  .preview-doc h2 { font-size: 16px; margin: 22px 0 8px; }
+  .preview-doc h2:first-child { margin-top: 0; }
+  .preview-doc .section-content { font-size: 13.5px; line-height: 1.75; }
+
+  /* ---------- footer ---------- */
+  .editor-footer { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+  .footer-btn { padding: 9px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--text); }
+  .footer-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  select.expiry { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); font-size: 12px; padding: 6px 8px; border-radius: 6px; }
+  .share-link-box { display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--text-dim); margin-left: auto; }
+  .share-link-box code { background: var(--panel-2); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); }
+
+  /* ---------- modal ---------- */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 10; }
+  .modal-backdrop.show { display: flex; }
+  .modal { width: 420px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+  .modal h3 { margin: 0 0 14px; font-size: 14px; }
+  .modal .field { margin-bottom: 14px; }
+  .modal .field label { display: block; font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px; }
+  .radio-row { display: flex; gap: 8px; }
+  .radio-opt { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; text-align: center; font-size: 12.5px; }
+  .radio-opt.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+  .modal select { width: 100%; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 8px; font-size: 13px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip-opt { padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; color: var(--text-dim); }
+  .chip-opt.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+  .modal-actions button { padding: 7px 14px; border-radius: 7px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); }
+  .modal-actions button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Reports · TPM Task Triage</h1>
+</header>
+
+<main>
+  <div class="history-col">
+    <button class="new-report-btn" id="newReportBtn">+ 새 리포트</button>
+    <div class="history-list" id="historyList"></div>
+  </div>
+  <div class="editor-col" id="editorCol"></div>
+</main>
+
+<div class="modal-backdrop" id="genModal">
+  <div class="modal">
+    <h3>새 리포트 생성</h3>
+    <div class="field">
+      <label>유형</label>
+      <div class="radio-row" id="typeRow">
+        <div class="radio-opt active" data-type="team">팀용 (상세)</div>
+        <div class="radio-opt" data-type="executive">임원용 (요약)</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>기간</label>
+      <select id="periodSelect">
+        <option value="1w">지난 1주</option>
+        <option value="2w">지난 2주</option>
+        <option value="custom">커스텀 범위</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>담당자 범위</label>
+      <div class="chip-row" id="assigneeChipRow">
+        <div class="chip-opt active" data-a="all">전체</div>
+        <div class="chip-opt" data-a="김도현">김도현</div>
+        <div class="chip-opt" data-a="이은지">이은지</div>
+        <div class="chip-opt" data-a="최민준">최민준</div>
+        <div class="chip-opt" data-a="박서연">박서연</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="genCancel">취소</button>
+      <button class="primary" id="genConfirm">생성</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TEAM_SECTIONS = [
+  { key: "summary", label: "기간 요약" },
+  { key: "done", label: "완료된 태스크" },
+  { key: "inprogress", label: "진행중 & 예정 마감" },
+  { key: "risk", label: "리스크 / 블로커" },
+  { key: "next", label: "다음 기간 계획" },
+];
+const EXEC_SECTIONS = [
+  { key: "headline", label: "헤드라인" },
+  { key: "highlights", label: "핵심 성과" },
+  { key: "risk", label: "주요 리스크" },
+  { key: "decisions", label: "필요한 의사결정" },
+];
+
+let reports = [
+  {
+    id: "r1", type: "team", title: "팀 주간 리포트", period: "2026-08-04 ~ 2026-08-10", status: "draft",
+    createdAt: "2026-08-11", tab: "edit",
+    sections: {
+      summary: { label: "기간 요약", ai: true, edited: false,
+        html: "이번 주는 인증/마이그레이션 트랙이 순조롭게 진행됐고, 결제 모듈 쪽에서 QA 환경 세팅 지연으로 리스크가 하나 발생했습니다." },
+      done: { label: "완료된 태스크", ai: true, edited: false,
+        html: "<ul><li><b>박서연</b> — 신규 입사자 온보딩 문서 초안 작성</li><li><b>이은지</b> — 결제 실패 로그 정리</li></ul>" },
+      inprogress: { label: "진행중 & 예정 마감", ai: true, edited: true,
+        html: "<ul><li><b>김도현</b> — API 게이트웨이 인증 (8/15 마감, 스키마 마이그레이션 대기 중)</li><li><b>이은지</b> — 리포트 자동 배포 (8/14 마감)</li></ul>" },
+      risk: { label: "리스크 / 블로커", ai: true, edited: false,
+        html: "<ul><li>⚠ QA 환경 세팅(최민준, 8/19 예상)이 결제 모듈 리팩토링(8/16 마감)보다 늦게 끝날 것으로 예상 — 일정 충돌</li></ul>" },
+      next: { label: "다음 기간 계획", ai: true, edited: false,
+        html: "<ul><li>결제 게이트웨이 계약 검토 (8/22 마감, 담당자 미정)</li><li>베타 API 문서 리뷰 (기한 미정, API 인증 완료 대기)</li></ul>" },
+    },
+  },
+  {
+    id: "r2", type: "team", title: "팀 주간 리포트", period: "2026-07-28 ~ 2026-08-03", status: "shared",
+    createdAt: "2026-08-04", tab: "preview",
+    sections: {
+      summary: { label: "기간 요약", ai: true, edited: false, html: "일정대로 진행됨. 특이 리스크 없음." },
+      done: { label: "완료된 태스크", ai: true, edited: false, html: "<ul><li><b>김도현</b> — 인증 서버 스펙 검토</li></ul>" },
+      inprogress: { label: "진행중 & 예정 마감", ai: true, edited: false, html: "<ul><li><b>박서연</b> — 온보딩 문서 초안 작성</li></ul>" },
+      risk: { label: "리스크 / 블로커", ai: true, edited: false, html: "이번 기간엔 해당 없음." },
+      next: { label: "다음 기간 계획", ai: true, edited: false, html: "<ul><li>API 게이트웨이 인증 착수</li></ul>" },
+    },
+  },
+  {
+    id: "r3", type: "executive", title: "임원 요약 리포트", period: "2026-07-21 ~ 2026-08-03", status: "shared",
+    createdAt: "2026-08-03", tab: "preview",
+    sections: {
+      headline: { label: "헤드라인", ai: true, edited: true, html: "<b>🟡 At Risk</b> — 결제 모듈 트랙에 일정 리스크 발생, 나머지는 순항 중." },
+      highlights: { label: "핵심 성과", ai: true, edited: false, html: "<ul><li>인증 인프라 트랙 착수</li><li>온보딩 문서화 완료</li></ul>" },
+      risk: { label: "주요 리스크", ai: true, edited: false, html: "결제 모듈 리팩토링이 QA 환경 세팅 지연으로 마감을 지킬 수 없을 가능성이 높습니다." },
+      decisions: { label: "필요한 의사결정", ai: true, edited: false, html: "QA 환경 세팅 우선순위를 높이거나, 결제 모듈 마감을 조정하는 결정이 필요합니다." },
+    },
+  },
+];
+
+let selectedId = reports[0].id;
+const historyList = document.getElementById("historyList");
+const editorCol = document.getElementById("editorCol");
+
+function byId(id) { return reports.find(r => r.id === id); }
+function sectionDefs(type) { return type === "team" ? TEAM_SECTIONS : EXEC_SECTIONS; }
+function typeLabel(t) { return t === "team" ? "팀용" : "임원용"; }
+
+function renderHistory() {
+  historyList.innerHTML = "";
+  reports.forEach(r => {
+    const el = document.createElement("div");
+    el.className = "history-item" + (r.id === selectedId ? " selected" : "");
+    el.innerHTML = `
+      <div class="history-top">
+        <span class="type-badge">${typeLabel(r.type)}</span>
+        <span>${r.createdAt}</span>
+        <span class="status-badge ${r.status}">${r.status === "shared" ? "공유됨" : "초안"}</span>
+      </div>
+      <div class="history-title">${r.title}</div>
+      <div style="font-size:11px;color:var(--text-faint);margin-top:2px;">${r.period}</div>`;
+    el.addEventListener("click", () => { selectedId = r.id; renderAll(); });
+    historyList.appendChild(el);
+  });
+}
+
+function renderEditor() {
+  const r = byId(selectedId);
+  if (!r) { editorCol.innerHTML = `<div class="empty-state">리포트를 선택하거나 새로 생성하세요</div>`; return; }
+
+  const staleHtml = r.stale ? `
+    <div class="stale-banner">⚠ 공유된 링크와 내용이 달라졌습니다 — 다시 공유하시겠어요?
+      <button id="reshareBtn">다시 공유</button>
+    </div>` : "";
+
+  editorCol.innerHTML = `
+    <div class="editor-head">
+      <div class="top-row">
+        <span class="editor-title">${r.title}</span>
+        <span class="type-badge">${typeLabel(r.type)}</span>
+        <span class="status-badge ${r.status}">${r.status === "shared" ? "공유됨" : "초안"}</span>
+      </div>
+      <div class="editor-meta">${r.period} · 생성일 ${r.createdAt}</div>
+    </div>
+    ${staleHtml}
+    <div class="tabs">
+      <div class="tab ${r.tab === "edit" ? "active" : ""}" data-tab="edit">편집</div>
+      <div class="tab ${r.tab === "preview" ? "active" : ""}" data-tab="preview">미리보기</div>
+    </div>
+    <div class="editor-body" id="editorBody"></div>
+    <div class="editor-footer">
+      <select class="expiry" id="expirySelect">
+        <option value="7">7일 후 만료</option>
+        <option value="30">30일 후 만료</option>
+        <option value="0">무제한</option>
+      </select>
+      <button class="footer-btn primary" id="shareBtn">공유 링크 생성</button>
+      <button class="footer-btn" id="pdfBtn">PDF로 내보내기</button>
+      <div class="share-link-box" id="shareLinkBox">
+        <span>링크 복사됨:</span><code>tpm.local/r/${r.id}-${Math.random().toString(36).slice(2,8)}</code>
+      </div>
+    </div>`;
+
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => { r.tab = t.dataset.tab; renderEditor(); }));
+  document.getElementById("shareBtn").addEventListener("click", () => {
+    r.status = "shared"; r.stale = false;
+    document.getElementById("shareLinkBox").style.display = "flex";
+    renderHistory(); renderEditor();
+  });
+  document.getElementById("pdfBtn").addEventListener("click", () => window.print());
+  const reshareBtn = document.getElementById("reshareBtn");
+  if (reshareBtn) reshareBtn.addEventListener("click", () => { r.stale = false; renderEditor(); });
+
+  r.tab === "edit" ? renderEditBody(r) : renderPreviewBody(r);
+}
+
+function renderEditBody(r) {
+  const body = document.getElementById("editorBody");
+  const defs = sectionDefs(r.type);
+  body.innerHTML = defs.map(d => {
+    const s = r.sections[d.key];
+    return `
+    <div class="section-card">
+      <div class="section-card-head">
+        <h3>${d.label}</h3>
+        ${s.edited ? `<span class="edited-badge">편집됨</span>` : `<span class="ai-badge">AI 생성</span>`}
+        <button class="regen-btn" data-key="${d.key}">↻ 이 섹션만 다시 생성</button>
+      </div>
+      <div class="section-content" contenteditable="true" data-key="${d.key}" data-placeholder="내용을 입력하세요...">${s.html}</div>
+    </div>`;
+  }).join("");
+
+  body.querySelectorAll(".section-content").forEach(el => {
+    el.addEventListener("input", () => {
+      const key = el.dataset.key;
+      r.sections[key].html = el.innerHTML;
+      r.sections[key].edited = true;
+      if (r.status === "shared") r.stale = true;
+      const card = el.closest(".section-card");
+      const badge = card.querySelector(".ai-badge, .edited-badge");
+      if (badge && badge.classList.contains("ai-badge")) {
+        badge.className = "edited-badge"; badge.textContent = "편집됨";
+      }
+      const banner = document.querySelector(".stale-banner");
+      if (r.stale && !banner) renderEditor();
+    });
+  });
+
+  body.querySelectorAll(".regen-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.key;
+      const s = r.sections[key];
+      const card = btn.closest(".section-card");
+      const contentEl = card.querySelector(".section-content");
+      contentEl.innerHTML = "";
+      contentEl.contentEditable = "false";
+      contentEl.innerHTML = `<div class="skeleton" style="width:90%"></div><div class="skeleton" style="width:70%"></div>`;
+      setTimeout(() => {
+        s.html = `<i>(재생성됨)</i> ${s.html}`;
+        s.edited = false;
+        renderEditBody(r);
+      }, 900);
+    });
+  });
+}
+
+function renderPreviewBody(r) {
+  const body = document.getElementById("editorBody");
+  const defs = sectionDefs(r.type);
+  const doc = document.createElement("div");
+  doc.className = "preview-doc" + (r.type === "executive" ? " executive" : "");
+  doc.innerHTML = defs.map(d => `<h2>${d.label}</h2><div class="section-content">${r.sections[d.key].html}</div>`).join("");
+  body.innerHTML = "";
+  body.appendChild(doc);
+}
+
+// ---------------- 새 리포트 생성 모달 ----------------
+const genModal = document.getElementById("genModal");
+let genType = "team";
+document.getElementById("newReportBtn").addEventListener("click", () => genModal.classList.add("show"));
+document.getElementById("genCancel").addEventListener("click", () => genModal.classList.remove("show"));
+document.querySelectorAll("#typeRow .radio-opt").forEach(opt => {
+  opt.addEventListener("click", () => {
+    document.querySelectorAll("#typeRow .radio-opt").forEach(o => o.classList.remove("active"));
+    opt.classList.add("active");
+    genType = opt.dataset.type;
+  });
+});
+document.querySelectorAll("#assigneeChipRow .chip-opt").forEach(chip => {
+  chip.addEventListener("click", () => {
+    if (chip.dataset.a === "all") {
+      document.querySelectorAll("#assigneeChipRow .chip-opt").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+    } else {
+      document.querySelector('#assigneeChipRow .chip-opt[data-a="all"]').classList.remove("active");
+      chip.classList.toggle("active");
+    }
+  });
+});
+
+document.getElementById("genConfirm").addEventListener("click", () => {
+  genModal.classList.remove("show");
+  const periodLabel = document.getElementById("periodSelect").value === "2w" ? "지난 2주" : document.getElementById("periodSelect").value === "custom" ? "커스텀 범위" : "지난 1주";
+  const id = "r" + (reports.length + 1) + Date.now().toString().slice(-3);
+  const defs = sectionDefs(genType);
+  const sections = {};
+  defs.forEach(d => { sections[d.key] = { label: d.label, ai: true, edited: false, html: "" }; });
+  const newReport = {
+    id, type: genType, title: genType === "team" ? "팀 주간 리포트" : "임원 요약 리포트",
+    period: `생성 중 (${periodLabel})`, status: "draft", createdAt: new Date().toISOString().slice(0,10),
+    tab: "edit", sections, generating: true,
+  };
+  reports.unshift(newReport);
+  selectedId = id;
+  renderAll();
+  renderGeneratingSkeleton(newReport);
+
+  let i = 0;
+  const keys = defs.map(d => d.key);
+  const interval = setInterval(() => {
+    if (i >= keys.length) { clearInterval(interval); newReport.generating = false;
+      newReport.period = periodLabel === "지난 1주" ? "2026-08-04 ~ 2026-08-11" : "2026-07-28 ~ 2026-08-11";
+      if (selectedId === id) renderEditor();
+      return;
+    }
+    const key = keys[i];
+    newReport.sections[key].html = mockGenerated(genType, key);
+    i++;
+    if (selectedId === id) renderGeneratingSkeleton(newReport);
+  }, 500);
+});
+
+function mockGenerated(type, key) {
+  const bank = {
+    summary: "이번 기간은 전반적으로 계획대로 진행됐습니다.",
+    done: "<ul><li>완료된 태스크 항목이 여기에 채워집니다.</li></ul>",
+    inprogress: "<ul><li>진행중인 태스크가 여기에 채워집니다.</li></ul>",
+    risk: "현재 감지된 리스크가 여기에 채워집니다.",
+    next: "<ul><li>다음 기간 계획이 여기에 채워집니다.</li></ul>",
+    headline: "<b>🟢 On Track</b> — 전체적으로 순항 중입니다.",
+    highlights: "<ul><li>핵심 성과 항목이 여기에 채워집니다.</li></ul>",
+    decisions: "특별히 요청할 의사결정 사항이 없습니다.",
+  };
+  return bank[key] || "";
+}
+
+function renderGeneratingSkeleton(r) {
+  const body = document.getElementById("editorBody");
+  if (!body) return;
+  const defs = sectionDefs(r.type);
+  body.innerHTML = defs.map(d => {
+    const s = r.sections[d.key];
+    const filled = s.html;
+    return `<div class="section-card">
+      <div class="section-card-head"><h3>${d.label}</h3>${filled ? `<span class="ai-badge">AI 생성</span>` : ""}</div>
+      ${filled ? `<div class="section-content">${filled}</div>` : `<div class="skeleton" style="width:85%"></div><div class="skeleton" style="width:60%"></div>`}
+    </div>`;
+  }).join("");
+}
+
+function renderAll() {
+  renderHistory();
+  renderEditor();
+}
+renderAll();
+</script>
+</body>
+</html>

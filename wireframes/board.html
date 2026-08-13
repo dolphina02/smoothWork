@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>Board — TPM Task Triage (Wireframe)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0f1115; --panel: #161923; --panel-2: #1c202c; --border: #2a2f3d;
+    --text: #e8eaf0; --text-dim: #9298a8; --text-faint: #656c7d;
+    --accent: #6c8dff; --accent-dim: #2c3350;
+    --green: #3ecf8e; --amber: #e8b64c; --red: #f0665e;
+    --radius: 10px; font-size: 15px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: -apple-system,"Segoe UI","Pretendard","Malgun Gothic",sans-serif; }
+  body { display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px;
+    border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  header h1 { font-size: 15px; font-weight: 600; margin: 0; }
+
+  .filter-bar { display: flex; gap: 8px; padding: 10px 20px; border-bottom: 1px solid var(--border);
+    flex-wrap: wrap; align-items: center; flex-shrink: 0; }
+  .filter-chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer; background: transparent; white-space: nowrap; }
+  .filter-chip.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+  .sep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; }
+  select.seg {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    font-size: 12px; padding: 4px 8px; border-radius: 6px;
+  }
+  .today-legend { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 11.5px; color: var(--text-faint); }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-line { width: 16px; height: 2px; }
+
+  main { flex: 1; display: flex; min-height: 0; overflow: hidden; position: relative; }
+
+  .assignee-col { width: 140px; flex-shrink: 0; border-right: 1px solid var(--border); overflow: hidden; }
+  .timeline-col { flex: 1; overflow-x: auto; overflow-y: hidden; position: relative; }
+  .unscheduled-col { width: 220px; flex-shrink: 0; border-left: 1px solid var(--border); padding: 12px; overflow-y: auto; }
+  .unscheduled-col h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-faint); margin: 0 0 10px; }
+  .unsched-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; cursor: pointer; }
+  .unsched-card:hover { border-color: var(--accent); }
+  .unsched-card .t { font-size: 12.5px; font-weight: 500; }
+  .unsched-card .a { font-size: 11px; color: var(--text-faint); margin-top: 3px; }
+  .unsched-card .dep-note { font-size: 10.5px; color: var(--amber); margin-top: 4px; }
+
+  .row-header { height: 26px; display: flex; align-items: center; padding: 0 12px;
+    font-size: 11px; font-weight: 600; color: var(--text-faint); text-transform: uppercase; letter-spacing: .03em;
+    background: var(--panel); border-bottom: 1px solid var(--border); }
+  .row-task { height: 40px; display: flex; align-items: center; padding: 0 12px; gap: 6px;
+    border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .row-task .swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .row-task .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .timeline-inner { position: relative; }
+  .date-header { display: flex; position: sticky; top: 0; background: var(--panel); z-index: 3; border-bottom: 1px solid var(--border); }
+  .date-cell { flex-shrink: 0; font-size: 10.5px; color: var(--text-faint); text-align: center;
+    padding: 6px 0; border-right: 1px solid var(--border); height: 26px; }
+  .date-cell.weekend { background: rgba(255,255,255,.02); }
+  .date-cell.today { color: var(--accent); font-weight: 700; }
+
+  .grid-row-header { border-bottom: 1px solid var(--border); background: var(--panel); position: relative; }
+  .grid-row-task { border-bottom: 1px solid var(--border); position: relative; }
+
+  .today-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px dashed var(--accent); z-index: 2; pointer-events: none; }
+
+  .bar { position: absolute; height: 24px; top: 8px; border-radius: 6px; display: flex; align-items: center;
+    padding: 0 8px; font-size: 11.5px; color: #04101f; font-weight: 600; cursor: pointer;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1.5px solid transparent; }
+  .bar:hover { filter: brightness(1.12); }
+  .bar.overdue { border-color: var(--red); box-shadow: 0 0 0 1px var(--red); }
+  .bar .overdue-tag { position: absolute; top: -9px; left: 4px; font-size: 9px; background: var(--red); color: #fff;
+    padding: 1px 5px; border-radius: 4px; font-weight: 700; }
+  .bar .milestone-mark { margin-left: 4px; }
+  .bar.selected { outline: 2px solid #fff; outline-offset: 1px; }
+
+  svg.dep-layer { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
+  .dep-path.normal { stroke: var(--text-faint); stroke-width: 1.5; fill: none; }
+  .dep-path.risky { stroke: var(--red); stroke-width: 2.25; fill: none; }
+  .dep-path.unknown { stroke: var(--text-faint); stroke-width: 1.5; fill: none; stroke-dasharray: 4 3; }
+  .dep-path.dim { opacity: .15; }
+  marker#arrow-normal path { fill: var(--text-faint); }
+  marker#arrow-risky path { fill: var(--red); }
+
+  /* ---------- 임팩트 분석 슬라이드오버 ---------- */
+  .impact-panel {
+    position: absolute; top: 0; right: 0; bottom: 0; width: 360px; background: var(--panel);
+    border-left: 1px solid var(--border); transform: translateX(100%); transition: transform .2s ease;
+    z-index: 5; display: flex; flex-direction: column; box-shadow: -8px 0 24px rgba(0,0,0,.35);
+  }
+  .impact-panel.open { transform: translateX(0); }
+  .impact-head { padding: 16px 18px; border-bottom: 1px solid var(--border); }
+  .impact-head .close { float: right; cursor: pointer; color: var(--text-faint); font-size: 18px; line-height: 1; }
+  .impact-head h2 { font-size: 14.5px; margin: 0 0 6px; }
+  .impact-head .meta { font-size: 12px; color: var(--text-dim); }
+  .impact-body { flex: 1; overflow-y: auto; padding: 16px 18px; }
+
+  .detail-tabs { display: flex; gap: 4px; padding: 0 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .detail-tab { padding: 10px 4px; font-size: 12.5px; color: var(--text-faint); cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .detail-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  .mention-card { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .mention-meta { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-faint); margin-bottom: 6px; }
+  .mention-badge { padding: 1px 6px; border-radius: 4px; background: var(--panel-2); border: 1px solid var(--border); }
+  .mention-tag { font-size: 10px; padding: 1px 6px; border-radius: 999px; margin-left: auto; }
+  .mention-tag.origin { background: rgba(108,141,255,.15); color: var(--accent); }
+  .mention-tag.followup { background: var(--panel-2); color: var(--text-dim); border: 1px solid var(--border); }
+  .mention-snippet { font-size: 12.5px; line-height: 1.55; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 11px; }
+  .mention-audio-link { font-size: 11.5px; color: var(--accent); margin-top: 6px; cursor: pointer; display: inline-block; }
+  .data-warn { font-size: 12px; color: var(--red); padding: 10px 0; }
+
+  .shift-input { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .shift-btn { font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--text-dim); cursor: pointer; }
+  .shift-btn.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+  .shift-input input[type=number] { width: 56px; background: var(--panel-2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 6px; padding: 5px 8px; font-size: 12.5px; }
+
+  .impact-summary { font-size: 13px; padding: 10px 12px; border-radius: 8px; background: var(--accent-dim);
+    color: var(--accent); margin-bottom: 14px; }
+  .milestone-warn { font-size: 12.5px; padding: 8px 12px; border-radius: 8px; background: rgba(232,182,76,.1);
+    border: 1px solid rgba(232,182,76,.35); color: var(--amber); margin-bottom: 14px; }
+  .no-impact { font-size: 12.5px; color: var(--text-faint); padding: 10px 0; }
+
+  .impact-group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-faint);
+    margin: 14px 0 6px; }
+  .impact-item { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .impact-item .left .t { font-weight: 500; }
+  .impact-item .left .a { color: var(--text-faint); font-size: 11.5px; margin-top: 2px; }
+  .impact-item .right { text-align: right; white-space: nowrap; }
+  .impact-item .old-date { color: var(--text-faint); text-decoration: line-through; font-size: 11px; }
+  .impact-item .new-date { color: var(--red); font-weight: 600; font-size: 12px; }
+  .dist-tag { font-size: 9.5px; padding: 1px 5px; border-radius: 4px; background: var(--panel-2); color: var(--text-faint); margin-left: 4px; }
+
+  .collapse-toggle { font-size: 12px; color: var(--accent); cursor: pointer; padding: 6px 0; }
+
+  .impact-footer { padding: 14px 18px; border-top: 1px solid var(--border); }
+  .apply-btn { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--text-faint); font-size: 13px; cursor: not-allowed; }
+  .apply-hint { font-size: 11px; color: var(--text-faint); margin-top: 6px; text-align: center; }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Board · TPM Task Triage</h1>
+  <div style="font-size:12px;color:var(--text-dim);" id="taskCount"></div>
+</header>
+
+<div class="filter-bar" id="filterBar">
+  <span style="font-size:11px;color:var(--text-faint);">담당자</span>
+  <div id="assigneeChips" style="display:flex;gap:6px;"></div>
+  <div class="sep"></div>
+  <button class="filter-chip" id="riskyToggle">⚠ 리스크 있는 dependency만</button>
+  <div class="sep"></div>
+  <span style="font-size:11px;color:var(--text-faint);">그룹</span>
+  <select class="seg" id="groupSelect">
+    <option value="assignee">담당자별</option>
+    <option value="flat">전체</option>
+  </select>
+  <span style="font-size:11px;color:var(--text-faint);margin-left:6px;">기간</span>
+  <select class="seg" id="rangeSelect">
+    <option value="14">2주</option>
+    <option value="28" selected>4주</option>
+    <option value="56">8주</option>
+  </select>
+  <div class="today-legend">
+    <span class="legend-item"><span class="legend-line" style="border-top:1.5px dashed var(--accent);"></span>오늘</span>
+    <span class="legend-item"><span class="legend-line" style="background:var(--text-faint);"></span>정상 의존</span>
+    <span class="legend-item"><span class="legend-line" style="background:var(--red);"></span>리스크 의존</span>
+    <span class="legend-item"><span class="legend-line" style="background:var(--text-faint);border-top:1.5px dashed var(--text-faint);background:none;border-bottom:1.5px dashed var(--text-faint);"></span>불명확</span>
+  </div>
+</div>
+
+<main id="main">
+  <div class="assignee-col" id="assigneeCol"></div>
+  <div class="timeline-col" id="timelineCol">
+    <div class="timeline-inner" id="timelineInner"></div>
+  </div>
+  <div class="unscheduled-col">
+    <h3>기한 미정</h3>
+    <div id="unschedList"></div>
+  </div>
+
+  <div class="impact-panel" id="impactPanel">
+    <div class="impact-head">
+      <span class="close" id="impactClose">✕</span>
+      <h2 id="impactTitle">태스크</h2>
+      <div class="meta" id="impactMeta"></div>
+    </div>
+    <div class="detail-tabs">
+      <div class="detail-tab active" data-tab="impact" id="tabBtnImpact">임팩트 분석</div>
+      <div class="detail-tab" data-tab="mentions" id="tabBtnMentions">관련 발언 (0)</div>
+    </div>
+    <div class="impact-body" id="tabPaneImpact">
+      <div class="shift-input">
+        <span style="font-size:12px;color:var(--text-dim);">며칠 밀리면?</span>
+        <button class="shift-btn" data-n="3">3일</button>
+        <button class="shift-btn" data-n="7">7일</button>
+        <button class="shift-btn" data-n="14">14일</button>
+        <input type="number" id="shiftCustom" value="3" min="1" />
+      </div>
+      <div id="impactContent"></div>
+    </div>
+    <div class="impact-body" id="tabPaneMentions" style="display:none;">
+      <div id="mentionsContent"></div>
+    </div>
+    <div class="impact-footer" id="impactFooter">
+      <button class="apply-btn" disabled>이 변경을 실제로 반영 (v1 비활성)</button>
+      <div class="apply-hint">실제 반영은 Inbox 검토 흐름을 통해서만 가능합니다</div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ---------------- 상수/유틸 ----------------
+const TODAY = new Date("2026-08-11");
+const RANGE_START = new Date("2026-08-03"); // Mon
+const DAY_W = 46;
+const ROW_TASK_H = 40;
+const ROW_HEADER_H = 26;
+const PALETTE = ["#9d7cff", "#4fd1e0", "#ef7fb0", "#f2a65a", "#4fb8a0", "#6c8dff"];
+const ASSIGNEE_ORDER = ["김도현", "이은지", "최민준", "박서연", "미배정"];
+
+function d(s) { return new Date(s); }
+function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
+function fmt(dt) { return `${dt.getMonth()+1}/${dt.getDate()}`; }
+function assigneeColor(name) {
+  const idx = ASSIGNEE_ORDER.indexOf(name || "미배정");
+  return PALETTE[(idx < 0 ? 0 : idx) % PALETTE.length];
+}
+
+// ---------------- Mock data ----------------
+const tasks = [
+  { id: "t1", title: "API 게이트웨이 인증", assignee: "김도현", created_at: d("2026-08-10"), due_date: d("2026-08-15"), status: "open" },
+  { id: "t2", title: "스키마 마이그레이션", assignee: "김도현", created_at: d("2026-08-05"), due_date: d("2026-08-11"), status: "open" },
+  { id: "t3", title: "리포트 자동 배포", assignee: "이은지", created_at: d("2026-08-11"), due_date: d("2026-08-14"), status: "open" },
+  { id: "t9", title: "결제 실패 로그 정리", assignee: "이은지", created_at: d("2026-08-04"), due_date: d("2026-08-10"), status: "open" },
+  { id: "t4", title: "QA 환경 세팅", assignee: "최민준", created_at: d("2026-08-06"), due_date: d("2026-08-19"), status: "open" },
+  { id: "t5", title: "결제 모듈 리팩토링", assignee: "최민준", created_at: d("2026-08-12"), due_date: d("2026-08-16"), status: "open" },
+  { id: "t6", title: "신규 입사자 온보딩 문서", assignee: "박서연", created_at: d("2026-08-04"), due_date: d("2026-08-11"), status: "open" },
+  { id: "t7", title: "베타 API 문서 리뷰", assignee: "박서연", created_at: d("2026-08-13"), due_date: null, status: "open" },
+  { id: "t8", title: "결제 게이트웨이 계약 검토", assignee: null, created_at: d("2026-08-14"), due_date: d("2026-08-22"), status: "open" },
+];
+const deps = [
+  { from: "t2", to: "t1" },  // 정상
+  { from: "t4", to: "t5" },  // 리스크
+  { from: "t1", to: "t7" },  // 불명확 (t7 due 없음)
+];
+
+// 태스크별 관련 발언 (extracted_candidates 트레이스 목데이터).
+// origin=true: source_candidate_id로 연결된 최초 추출 발화. false: matched_task_id로 연결된 후속 언급.
+const MENTIONS = {
+  t1: [
+    { source: "slack", who: "#platform-infra · 김도현", occurred_at: "2026-08-10",
+      text: "이거 API 게이트웨이 인증 붙이는 거, 제가 이번 주까지 끝내볼게요. 근데 스키마 마이그레이션 먼저 끝나야 붙일 수 있을 것 같은데.", origin: true },
+    { source: "slack", who: "#platform-infra · 박서연", occurred_at: "2026-08-13",
+      text: "API 게이트웨이 인증 진행 상황 어떤가요?", origin: false },
+    { source: "wav", who: "주간 싱크 · 김도현", occurred_at: "2026-08-14", timestamp_sec: 210,
+      text: "인증 붙이는 거 80%는 끝났고, 스키마 마이그레이션만 기다리는 중이에요.", origin: false },
+  ],
+  t2: [
+    { source: "slack", who: "#platform-infra · 김도현", occurred_at: "2026-08-05",
+      text: "스키마 마이그레이션은 제가 맡을게요, 이번 주 안에 끝낼 수 있을 것 같아요.", origin: true },
+    { source: "wav", who: "주간 싱크 · 김도현", occurred_at: "2026-08-09", timestamp_sec: 95,
+      text: "마이그레이션 스크립트 리뷰 요청드립니다, 오늘 중으로 봐주실 수 있나요.", origin: false },
+  ],
+  t4: [
+    { source: "mp3", who: "인프라 회의 · 최민준", occurred_at: "2026-08-06", timestamp_sec: 40,
+      text: "QA 환경 세팅은 제가 이번 주부터 시작할게요.", origin: true },
+    { source: "slack", who: "#qa · 이은지", occurred_at: "2026-08-15",
+      text: "QA 환경 언제쯤 될까요? 결제 모듈 리팩토링이 거기 막혀있어서요.", origin: false },
+  ],
+  t5: [
+    { source: "mp3", who: "인프라 회의 · 최민준", occurred_at: "2026-08-12", timestamp_sec: 58,
+      text: "결제 모듈 리팩토링은 QA 환경 세팅 끝나야 시작할 수 있어요, 그거부터 막혀있어서.", origin: true },
+  ],
+};
+function mentionsFor(taskId) {
+  if (MENTIONS[taskId]) return MENTIONS[taskId];
+  const t = byId(taskId);
+  return [{ source: "slack", who: `#tpm-sync · ${t.assignee || "미상"}`, occurred_at: fmt(t.created_at),
+    text: `${t.title} 관련 논의 발화 (목데이터 미작성)`, origin: true }];
+}
+
+function byId(id) { return tasks.find(t => t.id === id); }
+function isOverdue(t) { return t.due_date && t.status !== "done" && t.due_date < TODAY; }
+function isMilestone(t) {
+  const hasUpstream = deps.some(e => e.to === t.id);
+  const hasDownstream = deps.some(e => e.from === t.id);
+  return !!t.due_date && hasUpstream && !hasDownstream;
+}
+function depRisk(e) {
+  const f = byId(e.from), tt = byId(e.to);
+  if (!f.due_date || !tt.due_date) return "unknown";
+  return f.due_date > tt.due_date ? "risky" : "normal";
+}
+
+// ---------------- 필터 상태 ----------------
+let selectedAssignees = new Set();
+let riskyOnly = false;
+let groupMode = "assignee";
+let rangeDays = 28;
+let selectedTaskId = null;
+
+function visibleTasks() {
+  let list = tasks;
+  if (selectedAssignees.size) list = list.filter(t => selectedAssignees.has(t.assignee || "미배정"));
+  return list;
+}
+function scheduledVisible() { return visibleTasks().filter(t => t.due_date); }
+function unscheduledVisible() { return visibleTasks().filter(t => !t.due_date); }
+
+// ---------------- 필터바 렌더 ----------------
+const assigneeChips = document.getElementById("assigneeChips");
+const presentAssignees = ASSIGNEE_ORDER.filter(a => tasks.some(t => (t.assignee || "미배정") === a));
+presentAssignees.forEach(a => {
+  const chip = document.createElement("button");
+  chip.className = "filter-chip";
+  chip.textContent = a;
+  chip.style.borderLeft = `3px solid ${assigneeColor(a)}`;
+  chip.addEventListener("click", () => {
+    if (selectedAssignees.has(a)) selectedAssignees.delete(a); else selectedAssignees.add(a);
+    chip.classList.toggle("active");
+    renderAll();
+  });
+  assigneeChips.appendChild(chip);
+});
+document.getElementById("riskyToggle").addEventListener("click", (e) => {
+  riskyOnly = !riskyOnly;
+  e.target.classList.toggle("active", riskyOnly);
+  renderAll();
+});
+document.getElementById("groupSelect").addEventListener("change", (e) => { groupMode = e.target.value; renderAll(); });
+document.getElementById("rangeSelect").addEventListener("change", (e) => { rangeDays = +e.target.value; renderAll(); });
+
+// ---------------- 레이아웃 계산 (사이드바/타임라인 공유) ----------------
+function buildLayout() {
+  const list = scheduledVisible();
+  const items = [];
+  let y = 0;
+  if (groupMode === "assignee") {
+    const groups = {};
+    ASSIGNEE_ORDER.forEach(a => groups[a] = []);
+    list.forEach(t => groups[t.assignee || "미배정"].push(t));
+    ASSIGNEE_ORDER.forEach(a => {
+      if (!groups[a].length) return;
+      items.push({ type: "header", label: a, y, h: ROW_HEADER_H });
+      y += ROW_HEADER_H;
+      groups[a].sort((x, y2) => x.created_at - y2.created_at).forEach(t => {
+        items.push({ type: "task", task: t, y, h: ROW_TASK_H });
+        y += ROW_TASK_H;
+      });
+    });
+  } else {
+    list.slice().sort((a, b) => a.created_at - b.created_at).forEach(t => {
+      items.push({ type: "task", task: t, y, h: ROW_TASK_H });
+      y += ROW_TASK_H;
+    });
+  }
+  return { items, totalH: y };
+}
+
+function leftPx(dt) { return daysBetween(RANGE_START, dt) * DAY_W; }
+
+// ---------------- 렌더: 사이드바 ----------------
+function renderAssigneeCol(layout) {
+  const col = document.getElementById("assigneeCol");
+  col.style.position = "relative";
+  col.innerHTML = `<div style="height:${ROW_HEADER_H}px;" class="row-header">담당자</div>`;
+  const wrap = document.createElement("div");
+  wrap.style.position = "relative";
+  layout.items.forEach(item => {
+    const row = document.createElement("div");
+    row.style.height = item.h + "px";
+    if (item.type === "header") {
+      row.className = "row-header";
+      row.textContent = item.label;
+    } else {
+      row.className = "row-task";
+      row.innerHTML = `<span class="swatch" style="background:${assigneeColor(item.task.assignee)}"></span><span class="name">${item.task.assignee || "미배정"}</span>`;
+    }
+    wrap.appendChild(row);
+  });
+  col.appendChild(wrap);
+}
+
+// ---------------- 렌더: 타임라인 ----------------
+function renderTimeline(layout) {
+  const inner = document.getElementById("timelineInner");
+  const totalDays = rangeDays;
+  const widthPx = totalDays * DAY_W;
+  inner.style.width = widthPx + "px";
+
+  let headerHtml = `<div class="date-header" style="width:${widthPx}px;">`;
+  for (let i = 0; i < totalDays; i++) {
+    const dt = new Date(RANGE_START.getTime() + i * 86400000);
+    const isWeekend = dt.getDay() === 0 || dt.getDay() === 6;
+    const isToday = daysBetween(dt, TODAY) === 0;
+    headerHtml += `<div class="date-cell ${isWeekend ? "weekend" : ""} ${isToday ? "today" : ""}" style="width:${DAY_W}px;">${fmt(dt)}</div>`;
+  }
+  headerHtml += `</div>`;
+
+  let rowsHtml = `<div style="position:relative;width:${widthPx}px;height:${layout.totalH}px;">`;
+  layout.items.forEach(item => {
+    rowsHtml += `<div class="${item.type === "header" ? "grid-row-header" : "grid-row-task"}" style="position:absolute;top:${item.y}px;left:0;width:${widthPx}px;height:${item.h}px;"></div>`;
+  });
+  layout.items.filter(i => i.type === "task").forEach(item => {
+    const t = item.task;
+    const x = leftPx(t.created_at);
+    const w = Math.max(DAY_W * 0.9, leftPx(t.due_date) - x);
+    const overdue = isOverdue(t);
+    const ms = isMilestone(t);
+    rowsHtml += `<div class="bar ${overdue ? "overdue" : ""} ${t.id === selectedTaskId ? "selected" : ""}"
+        style="left:${x}px; top:${item.y + 8}px; width:${w}px; background:${assigneeColor(t.assignee)};"
+        data-id="${t.id}" title="${t.title} (${fmt(t.created_at)} ~ ${fmt(t.due_date)})">
+        ${overdue ? `<span class="overdue-tag">지연</span>` : ""}
+        <span class="name">${t.title}</span>${ms ? `<span class="milestone-mark">◆</span>` : ""}
+      </div>`;
+  });
+  rowsHtml += `<div class="today-line" style="left:${leftPx(TODAY)}px;"></div>`;
+  rowsHtml += renderDepSvg(layout, widthPx);
+  rowsHtml += `</div>`;
+
+  inner.innerHTML = headerHtml + rowsHtml;
+
+  inner.querySelectorAll(".bar").forEach(el => {
+    el.addEventListener("click", () => openImpact(el.dataset.id));
+  });
+}
+
+function renderDepSvg(layout, widthPx) {
+  const rowOf = {};
+  layout.items.filter(i => i.type === "task").forEach(i => rowOf[i.task.id] = i);
+  const visibleIds = new Set(Object.keys(rowOf));
+  let paths = "";
+  deps.forEach(e => {
+    if (!visibleIds.has(e.from) || !visibleIds.has(e.to)) return;
+    const risk = depRisk(e);
+    const dim = riskyOnly && risk === "normal";
+    const fromItem = rowOf[e.from], toItem = rowOf[e.to];
+    const fromT = fromItem.task, toT = toItem.task;
+    const x1 = leftPx(fromT.due_date), y1 = fromItem.y + fromItem.h / 2;
+    const x2 = leftPx(toT.created_at), y2 = toItem.y + toItem.h / 2;
+    const midX = (x1 + x2) / 2;
+    const marker = risk === "risky" ? "url(#arrow-risky)" : "url(#arrow-normal)";
+    const cls = risk === "unknown" ? "unknown" : risk;
+    paths += `<path class="dep-path ${cls} ${dim ? "dim" : ""}" marker-end="${marker}"
+      d="M${x1},${y1} C${midX},${y1} ${midX},${y2} ${x2},${y2}" />`;
+  });
+  return `<svg class="dep-layer" width="${widthPx}" height="${layout.totalH}">
+    <defs>
+      <marker id="arrow-normal" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" /></marker>
+      <marker id="arrow-risky" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" /></marker>
+    </defs>
+    ${paths}
+  </svg>`;
+}
+
+// ---------------- 렌더: 미정 컬럼 ----------------
+function renderUnscheduled() {
+  const wrap = document.getElementById("unschedList");
+  const list = unscheduledVisible();
+  if (!list.length) { wrap.innerHTML = `<div style="font-size:12px;color:var(--text-faint);">없음</div>`; return; }
+  wrap.innerHTML = list.map(t => {
+    const blockedBy = deps.filter(e => e.to === t.id).map(e => byId(e.from).title);
+    return `<div class="unsched-card" data-id="${t.id}">
+      <div class="t">${t.title}</div>
+      <div class="a">${t.assignee || "담당자 미정"}</div>
+      ${blockedBy.length ? `<div class="dep-note">⏳ ${blockedBy.join(", ")} 완료 대기</div>` : ""}
+    </div>`;
+  }).join("");
+  wrap.querySelectorAll(".unsched-card").forEach(el => el.addEventListener("click", () => openImpact(el.dataset.id)));
+}
+
+// ---------------- 임팩트 분석 ----------------
+let shiftDays = 3;
+
+function downstreamOf(taskId) {
+  const visited = new Map(); // id -> distance
+  const queue = [[taskId, 0]];
+  while (queue.length) {
+    const [cur, dist] = queue.shift();
+    deps.filter(e => e.from === cur).forEach(e => {
+      if (visited.has(e.to)) return;
+      visited.set(e.to, dist + 1);
+      queue.push([e.to, dist + 1]);
+    });
+  }
+  return visited; // id -> distance (1=직접, 2+=간접)
+}
+
+let activeDetailTab = "impact";
+
+function openImpact(taskId) {
+  selectedTaskId = taskId;
+  activeDetailTab = "impact";
+  const t = byId(taskId);
+  document.getElementById("impactTitle").textContent = t.title;
+  document.getElementById("impactMeta").textContent =
+    `${t.assignee || "담당자 미정"} · 현재 기한 ${t.due_date ? fmt(t.due_date) : "미정"}`;
+  document.getElementById("tabBtnMentions").textContent = `관련 발언 (${mentionsFor(taskId).length})`;
+  document.getElementById("impactPanel").classList.add("open");
+  switchTab("impact");
+  renderTimeline(buildLayout()); // re-render to show .selected outline
+  renderImpactBody();
+  renderMentionsBody();
+}
+function closeImpact() {
+  selectedTaskId = null;
+  document.getElementById("impactPanel").classList.remove("open");
+  renderTimeline(buildLayout());
+}
+document.getElementById("impactClose").addEventListener("click", closeImpact);
+
+function switchTab(tab) {
+  activeDetailTab = tab;
+  document.getElementById("tabBtnImpact").classList.toggle("active", tab === "impact");
+  document.getElementById("tabBtnMentions").classList.toggle("active", tab === "mentions");
+  document.getElementById("tabPaneImpact").style.display = tab === "impact" ? "" : "none";
+  document.getElementById("tabPaneMentions").style.display = tab === "mentions" ? "" : "none";
+  document.getElementById("impactFooter").style.display = tab === "impact" ? "" : "none";
+}
+document.getElementById("tabBtnImpact").addEventListener("click", () => switchTab("impact"));
+document.getElementById("tabBtnMentions").addEventListener("click", () => switchTab("mentions"));
+
+function renderMentionsBody() {
+  const wrap = document.getElementById("mentionsContent");
+  const list = mentionsFor(selectedTaskId).slice().sort((a, b) => a.occurred_at.localeCompare(b.occurred_at));
+  if (!list.length) {
+    wrap.innerHTML = `<div class="data-warn">⚠ 연결된 발언이 없습니다 — 데이터 정합성을 확인하세요 (모든 확정 태스크는 최초 추출 발화를 가져야 합니다).</div>`;
+    return;
+  }
+  const srcLabel = { slack: "Slack", wav: "WAV", mp3: "MP3" };
+  wrap.innerHTML = list.map(m => `
+    <div class="mention-card">
+      <div class="mention-meta">
+        <span class="mention-badge">${srcLabel[m.source]}</span>
+        <span>${m.who}</span>
+        <span>· ${m.occurred_at}</span>
+        <span class="mention-tag ${m.origin ? "origin" : "followup"}">${m.origin ? "최초 추출" : "후속 언급"}</span>
+      </div>
+      <div class="mention-snippet">${m.text}</div>
+      ${m.source !== "slack" ? `<span class="mention-audio-link">▶ 오디오에서 보기 (${Math.floor(m.timestamp_sec/60)}:${String(m.timestamp_sec%60).padStart(2,'0')})</span>` : ""}
+    </div>`).join("");
+}
+
+document.querySelectorAll(".shift-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    shiftDays = +btn.dataset.n;
+    document.getElementById("shiftCustom").value = shiftDays;
+    document.querySelectorAll(".shift-btn").forEach(b => b.classList.toggle("active", b === btn));
+    renderImpactBody();
+  });
+});
+document.getElementById("shiftCustom").addEventListener("input", (e) => {
+  shiftDays = Math.max(1, +e.target.value || 1);
+  document.querySelectorAll(".shift-btn").forEach(b => b.classList.toggle("active", +b.dataset.n === shiftDays));
+  renderImpactBody();
+});
+
+function renderImpactBody() {
+  const content = document.getElementById("impactContent");
+  const t = byId(selectedTaskId);
+  const downstream = downstreamOf(selectedTaskId);
+
+  if (!downstream.size) {
+    content.innerHTML = `<div class="no-impact">이 태스크는 다른 태스크를 막고 있지 않습니다 (다운스트림 영향 없음).</div>`;
+    return;
+  }
+
+  const affectedAssignees = new Set();
+  const items = [...downstream.entries()].map(([id, dist]) => {
+    const dt = byId(id);
+    affectedAssignees.add(dt.assignee || "담당자 미정");
+    return { task: dt, dist };
+  }).sort((a, b) => a.dist - b.dist);
+
+  const milestoneHits = items.filter(i => isMilestone(i.task));
+  const direct = items.filter(i => i.dist === 1);
+  const indirect = items.filter(i => i.dist > 1);
+
+  let html = `<div class="impact-summary">이 변경으로 <b>${items.length}개 태스크</b>, <b>${affectedAssignees.size}명</b>의 담당자에게 영향</div>`;
+  if (milestoneHits.length) {
+    html += `<div class="milestone-warn">⚠ 마일스톤 영향: ${milestoneHits.map(i => `"${i.task.title}"`).join(", ")}</div>`;
+  }
+
+  function itemHtml(i) {
+    const dt = i.task;
+    const oldDue = dt.due_date ? fmt(dt.due_date) : "미정";
+    const newDue = dt.due_date ? fmt(new Date(dt.due_date.getTime() + shiftDays * 86400000)) : "미정 (일정 불명확)";
+    return `<div class="impact-item">
+      <div class="left">
+        <div class="t">${dt.title}${i.dist > 1 ? `<span class="dist-tag">${i.dist}단계 건너 영향</span>` : ""}</div>
+        <div class="a">${dt.assignee || "담당자 미정"}</div>
+      </div>
+      <div class="right">
+        <div class="old-date">${oldDue}</div>
+        <div class="new-date">→ ${newDue}</div>
+      </div>
+    </div>`;
+  }
+
+  html += `<div class="impact-group-label">직접 영향 (${direct.length})</div>`;
+  html += direct.map(itemHtml).join("") || `<div class="no-impact">없음</div>`;
+
+  if (indirect.length) {
+    html += `<div class="collapse-toggle" id="indirectToggle">간접 영향 ${indirect.length}개 보기 ▾</div>`;
+    html += `<div id="indirectList" style="display:none;">${indirect.map(itemHtml).join("")}</div>`;
+  }
+
+  content.innerHTML = html;
+  const toggle = document.getElementById("indirectToggle");
+  if (toggle) toggle.addEventListener("click", () => {
+    const list = document.getElementById("indirectList");
+    const showing = list.style.display !== "none";
+    list.style.display = showing ? "none" : "block";
+    toggle.textContent = showing ? `간접 영향 ${indirect.length}개 보기 ▾` : `간접 영향 접기 ▴`;
+  });
+}
+
+// ---------------- 전체 렌더 ----------------
+function renderAll() {
+  const layout = buildLayout();
+  document.getElementById("taskCount").textContent = `${visibleTasks().length}개 태스크 표시 중`;
+  renderAssigneeCol(layout);
+  renderTimeline(layout);
+  renderUnscheduled();
+}
+renderAll();
+</script>
+</body>
+</html>
