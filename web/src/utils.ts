@@ -24,7 +24,7 @@ export function diffDays(a: string, b: string): number {
   return Math.round((db - da) / 86400000);
 }
 
-const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
-export function weekdayLabel(date: string): string {
-  return WEEKDAYS[new Date(`${date}T00:00:00`).getDay()];
+const WEEKDAYS_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+export function weekdayLabelEn(date: string): string {
+  return WEEKDAYS_EN[new Date(`${date}T00:00:00`).getDay()];
 }

@@ -1,0 +1,154 @@
+.date-strip-wrap {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.01);
+  overflow: hidden;
+}
+
+.date-strip-picker {
+  flex-shrink: 0;
+  width: 30px;
+  border: none;
+  border-right: 1px solid var(--border);
+  background: transparent;
+  color: transparent;
+  padding: 0 4px;
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.date-strip-picker::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.date-strip-picker:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
+.date-strip-arrow {
+  flex-shrink: 0;
+  width: 26px;
+  border: none;
+  background: transparent;
+  color: var(--sub);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.date-strip-wrap > .date-strip-arrow:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+.date-strip-arrow:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.date-strip-arrow:disabled {
+  color: var(--muted);
+  opacity: 0.35;
+}
+
+.date-strip {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  cursor: grab;
+  user-select: none;
+  scrollbar-width: none;
+}
+
+.date-strip:active {
+  cursor: grabbing;
+}
+
+.date-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.date-chip {
+  flex: 0 0 10%;
+  width: auto;
+  min-width: 52px;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 3px;
+  padding: 5px 4px;
+  border: none;
+  border-right: 1px solid var(--border);
+  background: transparent;
+  color: var(--sub);
+}
+
+.date-chip:last-child {
+  border-right: none;
+}
+
+.date-chip.active {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.date-chip.saturday .date-chip-day,
+.date-chip.saturday .date-chip-weekday {
+  color: var(--accent);
+}
+
+.date-chip.sunday .date-chip-day,
+.date-chip.sunday .date-chip-weekday {
+  color: var(--red);
+}
+
+.date-chip.saturday.active .date-chip-day,
+.date-chip.saturday.active .date-chip-weekday,
+.date-chip.sunday.active .date-chip-day,
+.date-chip.sunday.active .date-chip-weekday {
+  color: inherit;
+}
+
+.date-chip-weekday {
+  flex-shrink: 0;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-chip-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.date-chip-day {
+  font-size: 13.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.date-chip-tag {
+  font-size: 9px;
+  color: var(--accent);
+}
+
+.date-chip.active .date-chip-tag {
+  color: var(--accent-2);
+}

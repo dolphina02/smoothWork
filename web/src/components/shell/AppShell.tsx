@@ -11,9 +11,9 @@ interface NavDef {
 }
 
 const NAV_ITEMS: NavDef[] = [
-  { id: 'yesterday', label: 'Yesterday', mini: 'YES', icon: '◫' },
-  { id: 'today', label: 'Today', mini: 'TDY', icon: '◌' },
-  { id: 'task', label: 'Task', mini: 'TSK', icon: '▦' },
+  { id: 'logs', label: 'Logs', mini: 'LOG', icon: '◫' },
+  { id: 'actionItem', label: 'Action Item', mini: 'ACT', icon: '◌' },
+  { id: 'schedule', label: 'Schedule', mini: 'SCH', icon: '▦' },
   { id: 'meeting', label: 'Meeting', mini: 'MTG', icon: '◍' },
   { id: 'configuration', label: 'Configuration', mini: 'CFG', icon: '⚙' },
 ];
@@ -23,14 +23,20 @@ interface AppShellProps {
   onNavigate: (screen: ScreenId) => void;
   chatMessages: ChatMessage[];
   onSendChat: (text: string) => void;
+  onOpenSearch: () => void;
   children: ReactNode;
 }
 
-export function AppShell({ active, onNavigate, chatMessages, onSendChat, children }: AppShellProps) {
+export function AppShell({ active, onNavigate, chatMessages, onSendChat, onOpenSearch, children }: AppShellProps) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
         <div className="nav-stack">
+          <button type="button" className="nav-item search-trigger" title="통합 검색 (Ctrl+K)" onClick={onOpenSearch}>
+            <div>⌕</div>
+            <div className="mini">SRCH</div>
+            <div className="label">검색 (Ctrl+K)</div>
+          </button>
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}

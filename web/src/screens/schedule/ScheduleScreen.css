@@ -1,27 +1,3 @@
-.t-topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.t-leftops {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.t-select {
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--text);
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 12px;
-}
-
 .t-board {
   flex: 1;
   display: flex;
@@ -40,25 +16,102 @@
   height: 44px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 0 8px;
   color: var(--sub);
   font-size: 12px;
   border-bottom: 1px solid var(--border);
 }
 
-.t-assignee-list {
-  padding: 10px 8px;
+.t-row-header-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sub);
 }
 
-.t-assignee {
+.t-today-btn {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--sub);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.t-today-btn:hover {
+  border-color: rgba(122, 162, 255, 0.4);
+  color: var(--accent-2);
+}
+
+.t-tree {
+  display: flex;
+  flex-direction: column;
+}
+
+.t-lv1-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--sub);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.t-lv1-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.t-chevron {
+  flex-shrink: 0;
+  display: inline-block;
+  font-size: 9px;
+  color: var(--muted);
+  transition: transform 0.12s ease;
+}
+
+.t-chevron.open {
+  transform: rotate(90deg);
+}
+
+.t-lv1-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.t-lv1-count {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.t-lv2-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
-  margin-bottom: 6px;
-  border-radius: 10px;
+  height: 52px;
+  padding: 0 10px 0 22px;
+  border-bottom: 1px solid var(--border);
   color: var(--sub);
   font-size: 13px;
+}
+
+.t-unassigned-row {
+  color: var(--muted);
+  border-top: 1px solid var(--border);
 }
 
 .t-dot {
@@ -72,6 +125,13 @@
   flex: 1;
   overflow: auto;
   position: relative;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.t-timeline:active {
+  cursor: grabbing;
 }
 
 .t-date-grid {
@@ -87,14 +147,43 @@
   min-width: var(--cell-w, 74px);
   width: var(--cell-w, 74px);
   border-right: 1px solid var(--border);
-  text-align: center;
-  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 6px 6px;
   color: var(--muted);
   font-size: 11px;
 }
 
+.t-cell-weekday {
+  flex-shrink: 0;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.t-cell-day {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+}
+
 .t-cell strong {
   color: var(--sub);
+}
+
+.t-cell.saturday .t-cell-weekday,
+.t-cell.saturday strong {
+  color: var(--accent);
+}
+
+.t-cell.sunday .t-cell-weekday,
+.t-cell.sunday strong {
+  color: var(--red);
 }
 
 .t-cell.today-cell strong {
@@ -105,6 +194,11 @@
   position: relative;
   height: 52px;
   border-bottom: 1px solid var(--border);
+}
+
+.t-lane.t-lane-group {
+  height: 36px;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .t-today-line {
@@ -163,6 +257,15 @@
   border-bottom: 1px solid var(--border);
   font-size: 13px;
   color: var(--sub);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.t-panel-sub {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
 }
 
 .t-impact {

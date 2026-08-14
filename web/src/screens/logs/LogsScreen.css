@@ -1,64 +1,17 @@
 .y-topbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   padding: 12px 18px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  gap: 16px;
+  gap: 10px;
 }
 
 .datebar {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.nav-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--sub);
-  font-weight: 700;
-}
-
-.date-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 13px;
-  min-width: 92px;
-}
-
-.date-box strong {
-  font-size: 15px;
-}
-
-.date-box span {
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.y-tabs {
-  display: flex;
   gap: 8px;
-}
-
-.y-tab {
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--sub);
-  font-size: 12.5px;
-}
-
-.y-tab.active {
-  background: var(--accent-soft);
-  color: var(--text);
-  border-color: rgba(122, 162, 255, 0.35);
+  width: 100%;
 }
 
 .y-body {
@@ -74,6 +27,19 @@
   overflow: auto;
   padding: 10px;
   background: rgba(255, 255, 255, 0.01);
+}
+
+.y-section {
+  margin-bottom: 4px;
+}
+
+.y-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 2px 8px;
 }
 
 .y-card {

@@ -2,9 +2,9 @@ import type { Candidate, Task } from '../../types';
 import { isOverdue } from '../../utils';
 import { CandidateReview } from '../../components/CandidateReview';
 import '../../styles/candidate-review.css';
-import './TodayScreen.css';
+import './ActionItemScreen.css';
 
-interface TodayScreenProps {
+interface ActionItemScreenProps {
   today: string;
   tasks: Task[];
   onToggleTask: (id: string) => void;
@@ -13,7 +13,7 @@ interface TodayScreenProps {
   onReject: (id: string) => void;
 }
 
-export function TodayScreen({ today, tasks, onToggleTask, candidates, onApprove, onReject }: TodayScreenProps) {
+export function ActionItemScreen({ today, tasks, onToggleTask, candidates, onApprove, onReject }: ActionItemScreenProps) {
   const relevantTasks = tasks.filter((t) => (t.dueDate && t.dueDate <= today) || t.status === 'in_progress');
   const overdue = relevantTasks.filter((t) => isOverdue(t.dueDate, today) && t.status !== 'done');
   const dueTodayOrActive = relevantTasks.filter((t) => !(isOverdue(t.dueDate, today) && t.status !== 'done'));
@@ -23,7 +23,7 @@ export function TodayScreen({ today, tasks, onToggleTask, candidates, onApprove,
   return (
     <>
       <div className="topbar">
-        <div className="title">Today</div>
+        <div className="title">Action Item</div>
         <div className="meta">
           <span className="chip">{doneCount} / {relevantTasks.length} 완료</span>
           <span className="chip">{candidates.length} pending</span>

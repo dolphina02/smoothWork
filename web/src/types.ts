@@ -1,4 +1,4 @@
-export type ScreenId = 'yesterday' | 'today' | 'task' | 'meeting' | 'configuration';
+export type ScreenId = 'logs' | 'actionItem' | 'schedule' | 'meeting' | 'configuration';
 
 export type TaskStatus = 'open' | 'in_progress' | 'done';
 

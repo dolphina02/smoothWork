@@ -2,9 +2,9 @@ import { useState } from 'react';
 import type { ChatMessage, ScreenId } from '../../types';
 
 const SCREEN_LABEL: Record<ScreenId, string> = {
-  yesterday: 'Yesterday',
-  today: 'Today',
-  task: 'Task',
+  logs: 'Logs',
+  actionItem: 'Action Item',
+  schedule: 'Schedule',
   meeting: 'Meeting',
   configuration: 'Configuration',
 };

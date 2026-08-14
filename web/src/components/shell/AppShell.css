@@ -79,6 +79,13 @@
   color: var(--muted);
 }
 
+.search-trigger {
+  margin-bottom: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  border-radius: 12px 12px 0 0;
+}
+
 .nav-item.active .mini {
   color: var(--accent-2);
 }

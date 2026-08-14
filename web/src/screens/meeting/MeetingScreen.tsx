@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import type { Candidate, Meeting } from '../../types';
 import { addDays, countFollowupsForMeeting } from '../../utils';
 import { MeetingDetail } from '../../components/MeetingDetail';
-import '../../screens/yesterday/YesterdayScreen.css';
+import '../../screens/logs/LogsScreen.css';
 import '../../styles/detail-panel.css';
 import './MeetingScreen.css';
 
@@ -12,7 +12,8 @@ interface MeetingScreenProps {
   today: string;
   meetings: Meeting[];
   candidates: Candidate[];
-  onJumpToYesterday: (date: string) => void;
+  onJumpToActionItem: () => void;
+  initialSelectedId?: string;
 }
 
 function meetingStatus(m: Meeting): { cls: string; text: string } {
@@ -23,10 +24,10 @@ function meetingStatus(m: Meeting): { cls: string; text: string } {
   return { cls: 'done', text: '요약 완료' };
 }
 
-export function MeetingScreen({ today, meetings, candidates, onJumpToYesterday }: MeetingScreenProps) {
+export function MeetingScreen({ today, meetings, candidates, onJumpToActionItem, initialSelectedId }: MeetingScreenProps) {
   const [query, setQuery] = useState('');
   const [period, setPeriod] = useState<PeriodFilter>('all');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId ?? null);
   const [showRaw, setShowRaw] = useState(false);
 
   const periodStart = period === 'week' ? addDays(today, -7) : period === 'month' ? addDays(today, -30) : null;
@@ -112,7 +113,7 @@ export function MeetingScreen({ today, meetings, candidates, onJumpToYesterday }
               followupCount={followupCount}
               showRaw={showRaw}
               onToggleRaw={() => setShowRaw((v) => !v)}
-              onJumpToFollowup={followupCount > 0 ? () => onJumpToYesterday(selected.date) : undefined}
+              onJumpToFollowup={followupCount > 0 ? onJumpToActionItem : undefined}
             />
           ) : (
             <div className="empty-note">미팅을 선택하세요</div>
